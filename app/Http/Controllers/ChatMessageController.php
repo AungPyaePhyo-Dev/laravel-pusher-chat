@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessage;
 use App\Events\NewMessageSent;
 use App\Http\Requests\GetMessageRequest;
 use App\Http\Requests\StoreMessageRequest;
+use App\Models\Chat;
 use App\Models\ChatMessage;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ChatMessageController extends Controller
@@ -44,9 +47,32 @@ class ChatMessageController extends Controller
 
     private function sendNotificationToOther(ChatMessage $chatMessage) 
     {
-        $chatId = $chatMessage->id;
+        // $chatId = $chatMessage->id;
 
         broadcast(new NewMessageSent($chatMessage))->toOthers();
+
+        $user = auth()->user();
+        $userId = $user->id;
+
+        $chat = Chat::where('id', $chatMessage->chat_id)
+                ->with(['participants' => function($query) use ($userId) {
+                    $query->where('user_id', '!=', $userId);
+                }])
+                ->first();        
+
+                
+        if(count($chat->participants) > 0) {
+            $otherUserId = $chat->participants[0]->user_id;
+
+            $otherUser = User::where('id', $otherUserId)->first();
+            $otherUser->sendNewMessageNotification([
+                'messageData' => [
+                    'senderName' => $user->username,
+                    'message' => $chatMessage->message,
+                    'chatId' => $chatMessage->chat_id
+                ]
+            ]);
+        }
 
     }
 }

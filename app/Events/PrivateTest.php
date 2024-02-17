@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\ChatMessage;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -12,16 +11,24 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewMessageSent implements ShouldBroadcastNow
+class PrivateTest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(private ChatMessage $chatMessage)
+    public $user;
+    public function __construct($user)
     {
-        $this->chatMessage = $chatMessage;
+        $this->user = $user;
+    }
+
+    public function broadcaseWith() 
+    {
+        return [
+            'welcome' => 'welcome to the private club'
+        ];
     }
 
     /**
@@ -29,21 +36,10 @@ class NewMessageSent implements ShouldBroadcastNow
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chat-' .$this->chatMessage->chat_id),
-        ];
-    }
-
-    // public function broadcastAs() {
-    //     return 'message.sent';
-    // }
-
-    public function broadcastWith() {
-        return [
-            'chat_id' => $this->chatMessage->chat_id,
-            'message' => $this->chatMessage->toArray()
+            new PrivateChannel('private-chat-'. $this->user->id),
         ];
     }
 }

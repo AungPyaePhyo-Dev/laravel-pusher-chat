@@ -92,8 +92,8 @@ class ChatController extends Controller
      */
     public function show(Chat $chat)
     {
-        $chat->load('lastMessage.user', 'participants.user');
-        return $this->success($chat);
+        $chat->load('messages', 'lastMessage.user', 'participants.user');
+        return $this->success($chat->messages);
     }
 
     /**

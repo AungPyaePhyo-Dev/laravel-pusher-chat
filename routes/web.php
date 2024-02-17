@@ -1,5 +1,8 @@
 <?php
 
+use App\Events\PrivateTest;
+use App\Models\User;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +17,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('chat');
+});
+
+Route::get('broadcast-private', function(){
+    $user = User::find(1);
+    PrivateTest::dispatch($user);
+    return 'sent';
+});
+
+Route::get('broadcast-chat', function(){
+    $user = User::find(1);
+    PrivateTest::dispatch($user);
+    return 'sent';
 });
