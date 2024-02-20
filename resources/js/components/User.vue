@@ -1,25 +1,17 @@
 <template>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">Users</div>
-            <div class="card-body">
-                <div class="users">
-                    <h6>
-                        <a href="#">Aung Aung </a>
-                    </h6>
-                    <h6>
-                        <a href="#">Mg Mg </a>
-                    </h6>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h6>
+        <a href="#" @click="currentUser"> {{ user.username }} </a>
+    </h6>
 </template>
 
 <script>
+
     export default {
-        mounted() {
-            console.log('Component mounted.')
+        props: ['user'],
+        methods: {
+            currentUser() {
+                 this.$emit("currentUser", this.user.id)
+            }
         }
     }
 </script>

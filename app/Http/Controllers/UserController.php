@@ -11,4 +11,8 @@ class UserController extends Controller
         $users = User::where('id', '!=', auth()->user()->id)->get();
         return $this->success($users);
     }
+
+    public function getChats($userId) {
+        dd($userId);
+    }
 }

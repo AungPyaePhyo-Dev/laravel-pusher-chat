@@ -1,41 +1,62 @@
 
 <template>
     <div class="chat__message">
-        <div v-for="message in messages" 
-            :key="message.id">
-            <div class="message self my-3">
-                    <strong class="user">You</strong>
-                    <p class="body">
-                        {{ message.message }}
-                    </p>
-                </div>
-            <!-- <div v-for="single_message in message.messages" :key="single_message.id">
-                <div class="message self my-3">
-                    <strong class="user">You</strong>
-                    <p class="body">
-                        {{ single_message.message }}
-                    </p>
-                </div>
-            </div> -->
+        {{ currentFilteredUser }}
+        
+        <div v-for="participant in chat.participants" 
+            :key="participant.id" class="d-flex justify-content-end">
+            <div class="message self my-3 col-md-4">
+                {{ participant.chat }}
+            </div>
         </div>
+
+
        
-        <div class="message income my-4">
+        <div class="d-flex justify-content-start">
+            <div class="message income my-4 col-md-4">
             <strong class="user">Aung Aung</strong>
-            <p class="body">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam cumque quaerat rem quia veniam exercitationem, commodi numquam omnis! Non placeat perspiciatis nulla illum cumque ad natus asperiores fuga. Facere, dignissimos.</p>
+            <p class="body">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+        </div>
         </div>
     </div>
 </template>
 
 <script>
 
+
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+        window.Pusher = Pusher;
+
+        window.Echo = new Echo({
+                        broadcaster: 'pusher',
+                        key: import.meta.env.VITE_PUSHER_APP_KEY,
+                        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                        authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                        auth: {
+                            headers: {
+                                Authorization: 'Bearer 31|mv7fX7lVTK8hVkQOIEl9evCamgA9abAawRdNvm3ef1db626f'
+                            }
+                        },
+                        forceTLS: false,
+                        encrypted: true,
+                        disableStats: true,
+                        enabledTransports: ['ws', 'wss'],
+                        csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+                    });
+                    
+
     export default {
+         props: ['currentFilteredUser'],
+
         data() {
             return {
-                messages : []
+                chat : [],
             }
         },
         mounted() {
-            let token = '4|WgDtjOCG7iiYaNO70bxNI9qhwWZCCAJTFxgrKH6Fb4f1d39d';
+            let token = '31|mv7fX7lVTK8hVkQOIEl9evCamgA9abAawRdNvm3ef1db626f';
 
             axios.request({
                 headers: {
@@ -44,12 +65,16 @@
                 method: "GET",
                 url: `/api/chat/1`
                 }).then(response => {
-                    this.messages = response.data.data;
+                    this.chat = response.data.data;
             });
 
             window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
                 this.messages.push(e.message);
                });
+        },
+
+        computed() {
+
         }
     }
 </script>

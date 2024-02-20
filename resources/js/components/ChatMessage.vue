@@ -1,6 +1,6 @@
 <template>
     <div class="message-area">
-        <Message />
+        <Message :currentFilteredUser="currentFilteredUser" />
     </div>
 </template>
 
@@ -9,9 +9,16 @@
     import Message from './Message.vue';
 
     export default {
+        props : ['currentFilteredUser'],
+        
         components : {
             ChatMessages,
             Message
+        },
+        data() {
+            return {
+                
+            }
         },
         mounted() {
             console.log('Component mounted.')
