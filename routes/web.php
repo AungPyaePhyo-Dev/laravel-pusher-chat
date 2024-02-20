@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\PrivateTest;
+use App\Http\Controllers\HomeController;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -31,3 +32,10 @@ Route::get('broadcast-chat', function(){
     PrivateTest::dispatch($user);
     return 'sent';
 });
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('chat', [HomeController::class, 'chat'])->name('chat');
+
+Route::get('messages', [HomeController::class, 'messages']);
+
+Route::post('messages', [HomeController::class, 'messageStore'])->name('messageStore');
