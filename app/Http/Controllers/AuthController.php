@@ -28,12 +28,20 @@ class AuthController extends Controller
     public function login(LoginRequest $request) {
         $isValid  = $this->isValidCredential($request);
         if(!$isValid['success']) {
+            if($request->type && $request->type == "web") {
+                return to_route('login_page')->with('message', 'Credentials does not match');
+            }
             return $this->error($isValid['message'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $user = $isValid['user'];
         $token = $user->createToken(USER::USER_TOKEN);
 
+
+        if($request->type && $request->type == "web") {
+            return redirect()->route('home')->with(['token' => $token->plainTextToken, 'user' => $user]);
+        }
+        
         return $this->success([
             'user' => $user,
             'token' => $token->plainTextToken

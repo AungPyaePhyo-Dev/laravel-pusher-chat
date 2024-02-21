@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\PrivateTest;
+use App\Http\Controllers\AuthController;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('chat');
+    return to_route('login');
 });
 
 Route::get('broadcast-private', function(){
@@ -31,3 +32,13 @@ Route::get('broadcast-chat', function(){
     PrivateTest::dispatch($user);
     return 'sent';
 });
+
+Route::get('/login', function(){
+    return view('login');
+})->name('login_page');
+
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+Route::get('home', function(){
+    return view('home');
+})->name('home');

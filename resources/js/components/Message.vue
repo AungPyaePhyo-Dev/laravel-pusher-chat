@@ -1,103 +1,131 @@
 
+
 <template>
-    <div class="chat__message">
-        {{ currentFilteredUser }}
-        
-        <div v-for="participant in chat.participants" 
-            :key="participant.id" class="d-flex justify-content-end">
-            <div class="message self my-3 col-md-4">
-                {{ participant.chat }}
+	<div class="chat">
+        {{ chats }}
+            <div class="card-body" ref="hasScrolledToBottom" v-if="chat != null">
+                <template v-for="chat in chats" :key="chat.id">
+                    <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
+                        <p>
+                            <strong class="primary-font">
+                               {{ chat.user.username }} :
+                            </strong>
+                            {{ chat.message }}
+                        </p>
+                    </div>
+                    <div class="message message-send" v-else>
+                        <p>
+                            <strong class="primary-font">
+                               You ( {{ chat.user.username }} ):
+                            </strong>
+                            {{ chat.message }}
+                        </p>
+                    </div>
+                </template>
             </div>
-        </div>
 
+            <div>
+                <textarea 
+                    cols="25"
+                    rows="5"
+                    class="form-input" v-model="message">
+                </textarea>
+                <button class="button" @click="sendMessage">Send</button>
+            </div>
+	</div>
 
-       
-        <div class="d-flex justify-content-start">
-            <div class="message income my-4 col-md-4">
-            <strong class="user">Aung Aung</strong>
-            <p class="body">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-        </div>
-    </div>
+    
+
 </template>
-
 <script>
 
 
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
-        window.Pusher = Pusher;
+window.Pusher = Pusher;
 
-        window.Echo = new Echo({
-                        broadcaster: 'pusher',
-                        key: import.meta.env.VITE_PUSHER_APP_KEY,
-                        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                        authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
-                        auth: {
-                            headers: {
-                                Authorization: 'Bearer 31|mv7fX7lVTK8hVkQOIEl9evCamgA9abAawRdNvm3ef1db626f'
-                            }
-                        },
-                        forceTLS: false,
-                        encrypted: true,
-                        disableStats: true,
-                        enabledTransports: ['ws', 'wss'],
-                        csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
-                    });
+window.Echo = new Echo({
+                broadcaster: 'pusher',
+                key: import.meta.env.VITE_PUSHER_APP_KEY,
+                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                auth: {
+                    headers: {
+                        Authorization: 'Bearer 4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1'
+                    }
+                },
+                forceTLS: false,
+                encrypted: true,
+                disableStats: true,
+                enabledTransports: ['ws', 'wss'],
+                csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+            });
+
                     
 
     export default {
-         props: ['currentFilteredUser'],
-
+         props: ['currentFilteredUser', 'chats'],
         data() {
+            let chat_id = null;
+
+            if(this.chat) {
+                chat_id = this.chat.chat_id;
+            }
+
+            let loggedInUser = {
+                "id": 2,
+                "username": "user2",
+                "email": "user2@email.com",
+                "created_at": "2024-02-20T04:06:12.000000Z",
+                "updated_at": "2024-02-20T04:06:12.000000Z"
+            };
+
             return {
-                chat : [],
+                chats : [],
+                loggedInUser,
+            }
+        },
+        methods: {
+            sendMessage() {
+                let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+                
+
+                axios.request({
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    method: "POST",
+                    url: `/api/chat-message`,
+                    data: {
+                        message: this.message,
+                        chat_id: 1
+                    },
+                    }).then(response => {
+                        this.chats.push(response.data.data);
+                        this.message = '';
+                });
             }
         },
         mounted() {
-            let token = '31|mv7fX7lVTK8hVkQOIEl9evCamgA9abAawRdNvm3ef1db626f';
+            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
 
             axios.request({
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
                 method: "GET",
-                url: `/api/chat/1`
+                url: `/api/chat-message?chat_id=1&page=1`,
                 }).then(response => {
-                    this.chat = response.data.data;
+                    this.chats = response.data.data;
             });
 
             window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-                this.messages.push(e.message);
+                this.chats.push(e.message);
                });
-        },
-
-        computed() {
-
         }
     }
+
 </script>
 
-<style>
-    .user {
-        font-weight: 800;
-    }
-    .body {
-        margin-bottom: 0;
-        white-space: pre-wrap;
-    }
-    .message {
-        border-bottom: 1px solid #000000
-    }
-    .self {
-        background-color: #f0f0f0;
-        padding: 10px;
-    }
 
-    .income {
-        background-color: blue;
-        padding: 10px;
-        color: white;
-    }
-</style>

@@ -1,18 +1,42 @@
 <template>
     <div>
-        <form class="form">
-            <textarea 
-                cols="25"
-                rows="5"
-                class="form-input">
-            </textarea>
-            <button class="button">Send</button>
-        </form>
+        <textarea 
+            cols="25"
+            rows="5"
+            class="form-input" v-model="message">
+        </textarea>
+        <button class="button" @click="sendMessage">Send</button>
     </div>
 </template>
 
 <script>
     export default {
+
+        data() {
+            return {
+            message: ''
+            }
+        },
+        
+        methods: {
+            sendMessage() {
+                let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+
+                axios.request({
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    method: "POST",
+                    url: `/api/chat-message`,
+                    data: {
+                        message: this.message,
+                        chat_id: 1
+                    },
+                    }).then(response => {
+                        
+                });
+            }
+        },
         mounted() {
             console.log('Component mounted.')
         }

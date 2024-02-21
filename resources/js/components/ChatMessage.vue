@@ -1,6 +1,6 @@
 <template>
     <div class="message-area">
-        <Message :currentFilteredUser="currentFilteredUser" />
+        <Message :currentFilteredUser="currentFilteredUser" :chats="chats"/>
     </div>
 </template>
 
@@ -9,7 +9,7 @@
     import Message from './Message.vue';
 
     export default {
-        props : ['currentFilteredUser'],
+        props : ['currentFilteredUser', 'chats'],
         
         components : {
             ChatMessages,

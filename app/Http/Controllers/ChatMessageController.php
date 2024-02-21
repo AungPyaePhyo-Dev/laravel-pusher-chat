@@ -6,6 +6,7 @@ use App\Events\NewMessage;
 use App\Events\NewMessageSent;
 use App\Http\Requests\GetMessageRequest;
 use App\Http\Requests\StoreMessageRequest;
+use App\Jobs\SendMessage;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\User;
@@ -20,16 +21,25 @@ class ChatMessageController extends Controller
         $currentPage = $data['page'];
         $pageSize = $data['page_size'] ?? 15;
 
+        // $messages = ChatMessage::where('chat_id', $chatId)
+        //             ->with('user')
+        //             ->latest('created_at')
+        //             ->simplePaginate(
+        //                 $pageSize,
+        //                 ['*'],
+        //                 'page',
+        //                 $currentPage
+        //             );
+
+        // return $this->success($messages->getCollection());
+
         $messages = ChatMessage::where('chat_id', $chatId)
-                    ->with('user')
-                    ->latest('created_at')
-                    ->simplePaginate(
-                        $pageSize,
-                        ['*'],
-                        'page',
-                        $currentPage
-                    );
-        return $this->success($messages->getCollection());
+                                // ->where('user_id', auth()->user()->id)
+                                ->with('user')
+                                ->orderBy('id', 'asc')
+                                ->get();
+                                
+        return $this->success($messages);
     }
 
     public function store(StoreMessageRequest $request) {
@@ -51,28 +61,29 @@ class ChatMessageController extends Controller
 
         broadcast(new NewMessageSent($chatMessage))->toOthers();
 
-        $user = auth()->user();
-        $userId = $user->id;
+        // dispatch(new SendMessage($chatMessage));
 
-        $chat = Chat::where('id', $chatMessage->chat_id)
-                ->with(['participants' => function($query) use ($userId) {
-                    $query->where('user_id', '!=', $userId);
-                }])
-                ->first();        
+        // $user = auth()->user();
+        // $userId = $user->id;
 
-                
-        if(count($chat->participants) > 0) {
-            $otherUserId = $chat->participants[0]->user_id;
+        // $chat = Chat::where('id', $chatMessage->chat_id)
+        //         ->with(['participants' => function($query) use ($userId) {
+        //             $query->where('user_id', '!=', $userId);
+        //         }])
+        //         ->first();        
 
-            $otherUser = User::where('id', $otherUserId)->first();
-            $otherUser->sendNewMessageNotification([
-                'messageData' => [
-                    'senderName' => $user->username,
-                    'message' => $chatMessage->message,
-                    'chatId' => $chatMessage->chat_id
-                ]
-            ]);
-        }
+        // if(count($chat->participants) > 0) {
+        //     $otherUserId = $chat->participants[0]->user_id;
+
+        //     $otherUser = User::where('id', $otherUserId)->first();
+        //     $otherUser->sendNewMessageNotification([
+        //         'messageData' => [
+        //             'senderName' => $user->username,
+        //             'message' => $chatMessage->message,
+        //             'chatId' => $chatMessage->chat_id
+        //         ]
+        //     ]);
+        // }
 
     }
 }
