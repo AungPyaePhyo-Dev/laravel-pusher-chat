@@ -36,4 +36,8 @@ class Chat extends Model
             $q->where('user_id', $userId);
         });
     }
+
+    public function chatMessages() {
+        return $this->hasMany(ChatMessage::class, 'shop_id');
+    }
 }

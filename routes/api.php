@@ -39,3 +39,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('chat-message', ChatMessageController::class)->only(['index', 'store']);
     Route::apiResource('user', UserController::class)->only(['index']);
 });
+
+Route::post('chat-create', [ChatController::class, 'storeChat']);

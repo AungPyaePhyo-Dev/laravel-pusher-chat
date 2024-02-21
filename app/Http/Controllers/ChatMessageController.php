@@ -86,4 +86,13 @@ class ChatMessageController extends Controller
         // }
 
     }
+
+    public function storeChatMessage(Request $request) {
+        $chatMessage = ChatMessage::create([
+            'chat_id' => $request->chat_id,
+            'admin_id' => $request->admin_id,
+            'shop_id' => $request->shop_id
+        ]);
+        return response()->json($chatMessage);
+    }
 }

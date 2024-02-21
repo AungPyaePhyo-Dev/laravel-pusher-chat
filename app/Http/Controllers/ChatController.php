@@ -111,4 +111,16 @@ class ChatController extends Controller
     {
         //
     }
+
+    public function storeChat(Request $request) {
+       $chat =  Chat::create([
+            'shop_id' => $request->shop_id,
+            'admin_id' => $request->admin_id
+        ]);
+        return response()->json($chat);
+    }
+
+    public function getChatByShopId($shopId) {
+        return Chat::with('chatMessages')->where('shop_id', $shopId)->first();
+    }
 }
