@@ -17,6 +17,8 @@ class ChatMessageController extends Controller
     public function index(GetMessageRequest $request) {
         $data = $request->validated();
 
+        $participantId = $data['participant_id'];
+
         $chatId = $data['chat_id'];
         $currentPage = $data['page'];
         $pageSize = $data['page_size'] ?? 15;
@@ -34,7 +36,10 @@ class ChatMessageController extends Controller
         // return $this->success($messages->getCollection());
 
         $messages = ChatMessage::where('chat_id', $chatId)
-                                // ->where('user_id', auth()->user()->id)
+                                ->where(function($qry)  use($participantId){
+                                    $qry->where('user_id', auth()->user()->id)
+                                        ->orWhere('user_id', $participantId);
+                                })
                                 ->with('user')
                                 ->orderBy('id', 'asc')
                                 ->get();

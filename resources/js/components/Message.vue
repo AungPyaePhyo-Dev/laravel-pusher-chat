@@ -115,12 +115,12 @@ window.Echo = new Echo({
                     Authorization: `Bearer ${token}`
                 },
                 method: "GET",
-                url: `/api/chat-message?chat_id=1&page=1`,
+                url: `/api/chat-message?${this.chat.chat_id}=1&page=1`,
                 }).then(response => {
                     this.chats = response.data.data;
             });
 
-            window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
+            window.Echo.private(`chat-${this.chat.chat_id}`).listen('NewMessageSent', (e) => {
                 this.chats.push(e.message);
                });
         }

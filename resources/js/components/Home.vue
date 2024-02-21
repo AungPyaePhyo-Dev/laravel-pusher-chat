@@ -19,7 +19,7 @@
                                             {{ chat.message }}
                                         </p>
                                     </div>
-                                    <div class="message message-send" v-else>
+                                    <div class="message message-send" v-if="chat.user.id == loggedInUser.id">
                                         <p>
                                             <strong class="primary-font">
                                             You ( {{ chat.user.username }} ):
@@ -73,6 +73,7 @@ import User from './User.vue'
 let chat = null;
 
 export default {
+  props: ['user', 'token'],
 
   components: {
     ChatMessage,
@@ -81,13 +82,17 @@ export default {
   },
   data() {
 
-        let loggedInUser = {
-                    "id": 2,
-                    "username": "user2",
-                    "email": "user2@email.com",
-                    "created_at": "2024-02-20T04:06:12.000000Z",
-                    "updated_at": "2024-02-20T04:06:12.000000Z"
-                };
+        // let loggedInUser = {
+        //             "id": 2,
+        //             "username": "user2",
+        //             "email": "user2@email.com",
+        //             "created_at": "2024-02-20T04:06:12.000000Z",
+        //             "updated_at": "2024-02-20T04:06:12.000000Z"
+        //         };
+
+        let loggedInUser = this.user;
+        let token = this.token;
+
                 
             return {
                 users : [],
@@ -95,7 +100,8 @@ export default {
                 chats: [],
                 loggedInUser,
                 message: '',
-                buttonDisabled: false
+                buttonDisabled: false,
+                token
             }
         },
   methods: {
@@ -107,7 +113,7 @@ export default {
       this.currentFilteredUser = currentUser;
     
       if(currentUser.chat_participants.length == 0) {
-            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+            let token = this.token;
             axios.request({
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -127,26 +133,26 @@ export default {
                     return participant.user_id == currentUser.id;
             })
 
-            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+            let token = this.token;
 
             axios.request({
                     headers: {
                         Authorization: `Bearer ${token}`
                     },
                     method: "GET",
-                    url: `/api/chat-message?chat_id=${chat.chat_id}&page=1`,
+                    url: `/api/chat-message?chat_id=${chat.chat_id}&page=1&participant_id=${this.currentFilteredUser.id}`,
                     }).then(response => {
                         this.chats = response.data.data;
                 });
 
-                window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-                    this.chats.push(e.message);
+                    window.Echo.private(`chat-${chat.chat_id}`).listen('NewMessageSent', (e) => {
+                        this.chats.push(e.message);
                     });
         }
     },
 
     sendMessage() {
-        let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+        let token = this.token;
 
         this.buttonDisabled = true;
 
@@ -176,7 +182,7 @@ export default {
 
   },
   mounted() {
-      let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+      let token = this.token;
 
       axios.request({
           headers: {
