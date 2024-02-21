@@ -107,10 +107,6 @@ export default {
                     }).then(response => {
                         this.chat = response.data;
                 });
-
-                // window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-                //     this.chats.push(e.message);
-                //     });
     },
 
     sendMessage() {
@@ -140,8 +136,11 @@ export default {
           url: `/api/shops`
           }).then(response => {
               this.shops = response.data.data;
-              console.log(this.shops)
       });
+
+      window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
+                    this.chats.push(e.message);
+                    });
   },
 
 }
