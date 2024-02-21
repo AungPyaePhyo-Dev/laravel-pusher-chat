@@ -44,5 +44,6 @@ Route::post('chat-create', [ChatController::class, 'storeChat']);
 Route::get('chat-data', [ChatController::class, 'getChat']);
 
 Route::get('chat-messages', [ChatMessageController::class, 'getChatMessages']);
+Route::post('chat-message-create', [ChatMessageController::class, 'storeChatMessage']);
 
 Route::get('shops', [ChatController::class, 'getShop']);

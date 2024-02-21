@@ -21,6 +21,13 @@ class ChatMessage extends Model
         return $this->belongsTo(Chat::class, 'chat_id');
     }
 
+    public function shop() {
+        return $this->belongsTo(Shop::class, 'shop_id');
+    }
+
+    public function admin() {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
     
     
 }

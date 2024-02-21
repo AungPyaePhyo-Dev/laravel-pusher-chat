@@ -7,14 +7,14 @@
                   <h4>Chats</h4>
                   <h6>{{ currentFilteredUser.username }}</h6>
                 </div>
-                <div class="card-body" v-if="currentFilteredUser">
+                <div class="card-body">
                     <div class="chat">
                             <div class="card-body" ref="hasScrolledToBottom">
-                                <template v-for="chat in chats" :key="chat.id">
-                                    <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
+                                <template v-for="chat in chat.chat_messages" :key="chat.id">
+                                    <div class="message message-receive" v-if="chat.shop_id != null" >
                                         <p>
                                             <strong class="primary-font">
-                                            {{ chat.user.username }} :
+                                            {{ chat.shop.name }} :
                                             </strong>
                                             {{ chat.message }}
                                         </p>
@@ -22,7 +22,7 @@
                                     <div class="message message-send" v-else>
                                         <p>
                                             <strong class="primary-font">
-                                            You ( {{ chat.user.username }} ):
+                                            You ( {{ chat.admin.name }} ):
                                             </strong>
                                             {{ chat.message }}
                                         </p>
@@ -40,11 +40,11 @@
                             </div>
                     </div>
                 </div>
-                <div v-else>
+                <!-- <div>
                     <div class="d-flex justify-content-center my-5">
                         Select a user to chat
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
         <div class="col-md-4">
@@ -53,7 +53,7 @@
               <div class="card-body">
                   <div class="users">
                       <div v-for="shop in shops" :key="shop.id">
-                          <User :shop="shop" :currentUser="currentUser" />
+                          <User :shop="shop" @currentUser="currentUser" />
                       </div>
                   </div>
               </div>
@@ -70,7 +70,6 @@ import ChatMessage from './ChatMessage.vue';
 import ChatForm from './ChatForm.vue';
 import User from './User.vue'
 
-let chat = null;
 
 export default {
 
@@ -92,7 +91,7 @@ export default {
             return {
                 shops : [],
                 currentFilteredUser: '',
-                chats: [],
+                chat: '',
                 loggedInUser,
                 message: '',
                 buttonDisabled: false
@@ -100,81 +99,32 @@ export default {
         },
   methods: {
 
-    currentUser(id){
+    currentUser(shopId){
 
-        console.log(id)
+                 axios.request({
+                    method: "GET",
+                    url: `/api/chat-data?admin_id=1&shop_id=${shopId}`,
+                    }).then(response => {
+                        this.chat = response.data;
+                });
 
-
-    //   let currentUser = this.users.find(user => {
-    //       return user.id == id;
-    //   });
-    //   this.currentFilteredUser = currentUser;
-    
-    //   if(currentUser.chat_participants.length == 0) {
-    //         let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
-    //         axios.request({
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`
-    //             },
-    //             method: "POST",
-    //             url: `/api/chat`,
-    //             data: {
-    //                 user_id: currentUser.id
-    //             },
-    //             }).then(response => {
-    //                 chat = response.data.data.participants.find(participant => {
-    //                     return participant.user_id == currentUser.id;
-    //                 });
-    //         });
-    //     } else {
-    //         chat = currentUser.chat_participants.find(participant => {
-    //                 return participant.user_id == currentUser.id;
-    //         })
-
-    //         let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
-
-    //         axios.request({
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`
-    //                 },
-    //                 method: "GET",
-    //                 url: `/api/chat-message?chat_id=${chat.chat_id}&page=1`,
-    //                 }).then(response => {
-    //                     this.chats = response.data.data;
-    //             });
-
-    //             window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-    //                 this.chats.push(e.message);
-    //                 });
-    //     }
+                // window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
+                //     this.chats.push(e.message);
+                //     });
     },
 
     sendMessage() {
-        let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
-
-        this.buttonDisabled = true;
-
         axios.request({
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
             method: "POST",
-            url: `/api/chat-message`,
+            url: `/api/chat-message-create`,
             data: {
                 message: this.message,
-                chat_id: chat.chat_id
+                chat_id: this.chat.id,
+                admin_id: 1
             },
             }).then(response => {
-                this.chats.push(response.data.data);
-                this.message = ''; 
-                setTimeout(() => {
-                    this.buttonDisabled = false;
-                }, 2000);    
+                this.chat.chat_messsages.push(response.data);
         });
-
-        
-
-        
 
     },
 

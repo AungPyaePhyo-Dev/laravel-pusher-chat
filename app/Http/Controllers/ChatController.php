@@ -122,7 +122,10 @@ class ChatController extends Controller
     }
 
     public function getChat(Request $request) {
-        return Chat::with('chatMessages')->where('id', 1)->get();
+        return Chat::with('chatMessages', 'chatMessages.shop', 'chatMessages.admin')->where([
+            'shop_id' => $request->shop_id,
+            'admin_id' => $request->admin_id
+        ])->first();
     }
 
     public function getShop() {

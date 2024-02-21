@@ -91,7 +91,8 @@ class ChatMessageController extends Controller
         $chatMessage = ChatMessage::create([
             'chat_id' => $request->chat_id,
             'admin_id' => $request->admin_id,
-            'shop_id' => $request->shop_id
+            'shop_id' => $request->shop_id,
+            'message' => $request->message
         ]);
         return response()->json($chatMessage);
     }
