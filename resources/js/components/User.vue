@@ -1,16 +1,16 @@
 <template>
     <h6>
-        <a href="#" @click="currentUser"> {{ user.username }} </a>
+        <a href="#" @click="currentUser"> {{ shop.name }} </a>
     </h6>
 </template>
 
 <script>
 
     export default {
-        props: ['user'],
+        props: ['shop'],
         methods: {
             currentUser() {
-                 this.$emit("currentUser", this.user.id)
+                 this.$emit("currentUser", this.shop.id)
             }
         }
     }

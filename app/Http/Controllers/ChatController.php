@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GetChatRequest;
 use App\Http\Requests\StoreChatRequest;
 use App\Models\Chat;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -120,7 +121,14 @@ class ChatController extends Controller
         return response()->json($chat);
     }
 
-    public function getChatByShopId($shopId) {
-        return Chat::with('chatMessages')->where('shop_id', $shopId)->first();
+    public function getChat(Request $request) {
+        return Chat::with('chatMessages')->where('id', 1)->get();
+    }
+
+    public function getShop() {
+        $shops =  Shop::get();
+        return response()->json([
+            'data' => $shops
+        ]);
     }
 }

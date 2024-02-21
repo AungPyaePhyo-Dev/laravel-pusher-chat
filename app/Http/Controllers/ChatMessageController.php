@@ -95,4 +95,9 @@ class ChatMessageController extends Controller
         ]);
         return response()->json($chatMessage);
     }
+
+    public function getChatMessages(Request $request) 
+    {
+        // ChatMessage::where('')
+    }
 }

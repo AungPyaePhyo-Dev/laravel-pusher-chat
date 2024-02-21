@@ -38,6 +38,6 @@ class Chat extends Model
     }
 
     public function chatMessages() {
-        return $this->hasMany(ChatMessage::class, 'shop_id');
+        return $this->hasMany(ChatMessage::class);
     }
 }

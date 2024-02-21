@@ -41,3 +41,8 @@ Route::middleware('auth:sanctum')->group(function() {
 });
 
 Route::post('chat-create', [ChatController::class, 'storeChat']);
+Route::get('chat-data', [ChatController::class, 'getChat']);
+
+Route::get('chat-messages', [ChatMessageController::class, 'getChatMessages']);
+
+Route::get('shops', [ChatController::class, 'getShop']);

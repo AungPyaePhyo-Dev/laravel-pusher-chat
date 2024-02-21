@@ -49,11 +49,11 @@
         </div>
         <div class="col-md-4">
           <div class="card">
-              <div class="card-header">Users</div>
+              <div class="card-header">Shops</div>
               <div class="card-body">
                   <div class="users">
-                      <div v-for="user in users" :key="user.id">
-                          <User :user="user" @currentUser="currentUser" />
+                      <div v-for="shop in shops" :key="shop.id">
+                          <User :shop="shop" :currentUser="currentUser" />
                       </div>
                   </div>
               </div>
@@ -90,7 +90,7 @@ export default {
                 };
                 
             return {
-                users : [],
+                shops : [],
                 currentFilteredUser: '',
                 chats: [],
                 loggedInUser,
@@ -101,48 +101,52 @@ export default {
   methods: {
 
     currentUser(id){
-      let currentUser = this.users.find(user => {
-          return user.id == id;
-      });
-      this.currentFilteredUser = currentUser;
+
+        console.log(id)
+
+
+    //   let currentUser = this.users.find(user => {
+    //       return user.id == id;
+    //   });
+    //   this.currentFilteredUser = currentUser;
     
-      if(currentUser.chat_participants.length == 0) {
-            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
-            axios.request({
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                method: "POST",
-                url: `/api/chat`,
-                data: {
-                    user_id: currentUser.id
-                },
-                }).then(response => {
-                    chat = response.data.data.participants.find(participant => {
-                        return participant.user_id == currentUser.id;
-                    });
-            });
-        } else {
-            chat = currentUser.chat_participants.find(participant => {
-                    return participant.user_id == currentUser.id;
-            })
+    //   if(currentUser.chat_participants.length == 0) {
+    //         let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+    //         axios.request({
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             },
+    //             method: "POST",
+    //             url: `/api/chat`,
+    //             data: {
+    //                 user_id: currentUser.id
+    //             },
+    //             }).then(response => {
+    //                 chat = response.data.data.participants.find(participant => {
+    //                     return participant.user_id == currentUser.id;
+    //                 });
+    //         });
+    //     } else {
+    //         chat = currentUser.chat_participants.find(participant => {
+    //                 return participant.user_id == currentUser.id;
+    //         })
 
-            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
+    //         let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
 
-            axios.request({
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    method: "GET",
-                    url: `/api/chat-message?chat_id=${chat.chat_id}&page=1`,
-                    }).then(response => {
-                        this.chats = response.data.data;
-                });
+    //         axios.request({
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`
+    //                 },
+    //                 method: "GET",
+    //                 url: `/api/chat-message?chat_id=${chat.chat_id}&page=1`,
+    //                 }).then(response => {
+    //                     this.chats = response.data.data;
+    //             });
 
-                window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-                    this.chats.push(e.message);
-                    });
-        }
+    //             window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
+    //                 this.chats.push(e.message);
+    //                 });
+    //     }
     },
 
     sendMessage() {
@@ -183,9 +187,10 @@ export default {
               Authorization: `Bearer ${token}`
           },
           method: "GET",
-          url: `/api/user`
+          url: `/api/shops`
           }).then(response => {
-              this.users = response.data.data;
+              this.shops = response.data.data;
+              console.log(this.shops)
       });
   },
 
