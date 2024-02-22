@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
 use App\Events\NewMessageSent;
+use App\Events\PrivateTest;
 use App\Http\Requests\GetMessageRequest;
 use App\Http\Requests\StoreMessageRequest;
 use App\Jobs\SendMessage;
@@ -94,6 +95,9 @@ class ChatMessageController extends Controller
             'shop_id' => $request->shop_id,
             'message' => $request->message
         ]);
+
+        $chatMessage = ChatMessage::with('admin', 'shop')->where('id', $chatMessage->id)->first();
+        broadcast(new PrivateTest($chatMessage))->toOthers();
         return response()->json($chatMessage);
     }
 

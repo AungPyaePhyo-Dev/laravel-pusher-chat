@@ -10,7 +10,7 @@
                 <div class="card-body">
                     <div class="chat">
                             <div class="card-body" ref="hasScrolledToBottom">
-                                <template v-for="chat in chat.chat_messages" :key="chat.id">
+                                <template v-for="chat in messages" :key="chat.id">
                                     <div class="message message-receive" v-if="chat.shop_id != null" >
                                         <p>
                                             <strong class="primary-font">
@@ -71,6 +71,31 @@ import ChatForm from './ChatForm.vue';
 import User from './User.vue'
 
 
+
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+                broadcaster: 'pusher',
+                key: import.meta.env.VITE_PUSHER_APP_KEY,
+                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                auth: {
+                    headers: {
+                        Authorization: 'Bearer 4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1'
+                    }
+                },
+                forceTLS: false,
+                encrypted: true,
+                disableStats: true,
+                enabledTransports: ['ws', 'wss'],
+                csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+            });
+let messages = [];
+
+
 export default {
 
   components: {
@@ -86,15 +111,16 @@ export default {
                     "email": "user2@email.com",
                     "created_at": "2024-02-20T04:06:12.000000Z",
                     "updated_at": "2024-02-20T04:06:12.000000Z"
-                };
+                }
+        let chat_messages = [];
                 
             return {
                 shops : [],
                 currentFilteredUser: '',
                 chat: '',
                 loggedInUser,
-                message: '',
-                buttonDisabled: false
+                buttonDisabled: false,
+                messages
             }
         },
   methods: {
@@ -105,6 +131,8 @@ export default {
                     method: "GET",
                     url: `/api/chat-data?admin_id=1&shop_id=${shopId}`,
                     }).then(response => {
+                        this.chat_messages = response.data.chat_messages;
+                        this.messages = response.data.chat_messages;
                         this.chat = response.data;
                 });
     },
@@ -118,8 +146,13 @@ export default {
                 chat_id: this.chat.id,
                 admin_id: 1
             },
-            }).then(response => {
-                this.chat.chat_messsages.push(response.data);
+            }).then(response => {   
+                this.messages.push(response.data);
+                console.log(window.Echo.private('chat-message-1'));
+                //  window.Echo.private('chat-message-1').listen('PrivateTest', (e) => {
+                //         console.log(e.message);
+                //         this.messages.push(e.message);
+                //     });
         });
 
     },
@@ -137,10 +170,6 @@ export default {
           }).then(response => {
               this.shops = response.data.data;
       });
-
-      window.Echo.private('chat-1').listen('NewMessageSent', (e) => {
-                    this.chats.push(e.message);
-                    });
   },
 
 }

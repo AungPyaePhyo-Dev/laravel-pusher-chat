@@ -18,17 +18,10 @@ class PrivateTest implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public $user;
-    public function __construct($user)
+    public $chatMessage;
+    public function __construct($chatMessage)
     {
-        $this->user = $user;
-    }
-
-    public function broadcaseWith() 
-    {
-        return [
-            'welcome' => 'welcome to the private club'
-        ];
+        $this->chatMessage = $chatMessage;
     }
 
     /**
@@ -39,7 +32,14 @@ class PrivateTest implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('private-chat-'. $this->user->id),
+            new PrivateChannel('chat-message-1'),
+        ];
+    }
+
+    public function broadcastWith() {
+        return [
+            'chat_id' => $this->chatMessage->chat_id,
+            'message' => $this->chatMessage->toArray()
         ];
     }
 }
