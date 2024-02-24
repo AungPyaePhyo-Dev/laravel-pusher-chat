@@ -12,7 +12,7 @@
             <input type="password" class="form-control" placeholder="Password" aria-label="Password" name="password" v-model="password" required>
         </div>
         <div class="text-center">
-            <button type="submit">Login</button>
+            <button type="submit" class="btn btn-primary">Login</button>
         </div>
     </form>
 </div>

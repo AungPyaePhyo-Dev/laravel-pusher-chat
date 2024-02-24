@@ -2,6 +2,7 @@
 
 use App\Events\PrivateTest;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;

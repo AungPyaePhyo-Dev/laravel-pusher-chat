@@ -111,4 +111,17 @@ class ChatController extends Controller
     {
         //
     }
+
+    public function getRelatedChat(Request $request) {
+        $chat = Chat::whereHas('participants', function ($query) use ($request) {
+            $query->where('user_id', $request->loggedin_user_id);
+        })
+        ->whereHas('participants', function ($query) use ($request) {
+            $query->where('user_id', $request->current_user_id);
+        })
+        ->with('participants') // Eager load participants if needed
+        ->first();
+
+        return response()->json($chat);   
+    }
 }

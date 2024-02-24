@@ -31,15 +31,32 @@
             margin-top: 5px;
         }
 
+        .message-send p{
+            text-align: left;
+        }
+
         .scrollable {
             overflow: hidden;
             overflow-y: scroll;
             height: calc(100vh - 25vh);
         }
+
         .message-input{
             border: none;
             border-radius: 0px;
             background: #f2f2f2;
+        }
+
+        .search-input {
+            background: #bbb;
+            border:none;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .search-input:focus {
+            outline: none;
         }
         
     </style>
