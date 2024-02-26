@@ -217,7 +217,10 @@ export default {
                                 csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
                             });
 
+                            console.log(window.Echo)
+
                             window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
+                                console.log(e);
                                 if(currentUser.id) {
                                     this.chats.push(e.message);
                                 }
