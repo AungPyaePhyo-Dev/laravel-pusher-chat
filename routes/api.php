@@ -36,6 +36,7 @@ Route::prefix('auth')
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('chat', ChatController::class)->only(['index', 'store', 'show']);
+    Route::get('chats', [ChatController::class, 'getAllChats']);
     Route::apiResource('chat-message', ChatMessageController::class)->only(['index', 'store']);
     Route::apiResource('user', UserController::class)->only(['index']);
     Route::get('related-chat', [ChatController::class, 'getRelatedChat']);

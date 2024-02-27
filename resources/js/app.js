@@ -7,7 +7,7 @@ import ChatMessage from './components/ChatMessage.vue';
 import Login from './components/Login.vue';
 
 const routes = [
-    {path: '/', component: Home},
+    {path: '/home', component: Home},
     {path: '/login', component: Login}
 ]
 

@@ -1,53 +1,39 @@
 <template>
     <div class="container-fluid">
         <div class="row justify-content-center ps-5">
-            <div class="col-md-2 p-0 vh-100 py-3" style="background-color: #d9dcdf;">
+            <div class="col-lg-2 p-0 vh-100 py-3" style="background-color: #d9dcdf;">
                 <div class="mx-3">
                     <h5 class="">Chats</h5>
-                    <input type="text" placeholder="Search users"  class="w-100 search-input p-2 my-3">
+                    <input type="text" placeholder="Search users" v-model="input" class="w-100 search-input p-2 my-3">
                     <div class="d-flex overflow-auto position-relative">
-                        <div v-for="user in users" :key="user.id" class="mx-2">
+                        <div v-for="user in filteredUsers" :key="user.id" class="mx-2">
                             <User :user="user" @currentUser="currentUser" />
                         </div>
                     </div>
                     <div class="my-4">
                         <h6 class="my-4">Recent</h6>
-                        <div class="d-flex align-items-center my-3">
-                            <div>
-                                <img style="border-radius: 50%; width:50px;" :src="image" alt="">
-                            </div>
-                            <div class="w-100 ms-2">
-                                <div class="d-flex justify-content-between">
-                                <div>
-                                    <span class="fw-bold">Myo Htet Oo</span>
-                                    <p>hello</p>
+                        <div class="" v-for="recent_chat in sortedData" :key="recent_chat.id">
+                            <div class="d-flex align-items-center my-3" :class="{ active : currentFilteredUser.id == getParticipantUser(recent_chat.participants).id }"  @click="currentUser(getParticipantUser(recent_chat.participants).id)" style="cursor:pointer;">
+                                    <div>
+                                    <img style="border-radius: 50%; width:50px;" :src="getImage(getParticipantUser(recent_chat.participants).id)" alt="">
                                 </div>
-                                <div>
-                                    <span>05 min</span>
+                                <div class="w-100 ms-2">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <span class="fw-bold">{{ getParticipantUser(recent_chat.participants).username }}</span>
+                                            <p>{{ getLastMessage(recent_chat) }}</p>
+                                        </div>
+                                        <div>
+                                            <span>{{  getHourAndMinutes(recent_chat.last_message.created_at) }}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center p-1" style="cursor:pointer; background-color: #bbb; border-radius:10px;">
-                            <div>
-                                <img style="border-radius: 50%; width:50px;" :src="image" alt="">
-                            </div>
-                            <div class="w-100 ms-2">
-                                <div class="d-flex justify-content-between">
-                                <div>
-                                    <span class="fw-bold">Tun Saw Thant</span>
-                                    <p>hello</p>
-                                </div>
-                                <div>
-                                    <span>05 min</span>
-                                </div>
-                            </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-10 px-0" style="position:relative;">
+            <div class="col-lg-10 px-0" style="position:relative;">
                     <div class="py-3 mx-3 d-flex justify-content-between">
                         <div class="d-flex align-items-center">
                             <img style="border-radius: 50%; width:50px;" :src="image" alt="">
@@ -98,11 +84,6 @@
                 </div>
                 <div class="d-flex mx-3 my-3">
                     <input type="text" class="form-control me-3" v-model="message">
-                    <!-- <textarea 
-                        cols="25"
-                        rows="1"
-                        class="form-input" v-model="message">
-                    </textarea> -->
                     <button class="button" :disabled="buttonDisabled" @click="sendMessage">Send</button>
                 </div>
             </div>
@@ -124,8 +105,9 @@ window.Pusher = Pusher;
 
 
 let chat = null;
-let currentChatId = null;
 let image = '';
+let input = '';
+let recent_chats = [];
 
 export default {
   props: ['user', 'token'],
@@ -147,18 +129,48 @@ export default {
             loggedInUser,
             message: '',
             buttonDisabled: false,
-            token
+            recent_chats,
+            image,
+            input
         }
   },
   methods: {
 
+    getLastMessage(recent_chat) {
+        if(recent_chat.last_message.message.length > 16) {
+            return recent_chat.last_message.message.substring(0, 16) + '...';    
+        }
+        return recent_chat.last_message.message.substring(0, 17);
+    },
+    
     getHourAndMinutes(dateString) {
-      const date = new Date(dateString);
-      const hour = date.getHours();
-      const minutes = date.getMinutes();
-      const amPM = hour >= 12 ? 'PM' : 'AM';
-      const formattedHour = hour % 12 || 12;
-      return `${formattedHour}:${minutes < 10 ? '0' : ''}${minutes} ${amPM}`; // Padding with zero if minutes < 10
+        const date = new Date(dateString);
+        const currentDate = new Date();
+
+        const formattedDate = date.toISOString().slice(0, 10);
+        const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
+
+        if (formattedDate === formattedCurrentDate) {
+            const hour = date.getHours();
+            const minutes = date.getMinutes();
+            const amPM = hour >= 12 ? 'PM' : 'AM';
+            const formattedHour = hour % 12 || 12;
+            return `${formattedHour}:${minutes < 10 ? '0' : ''}${minutes} ${amPM}`; // Padding with zero if minutes < 10
+        } else {
+            return formattedDate.slice(5, 10);
+        }
+    },
+
+    getParticipantUser(participants) {
+        let logged_user_id = this.loggedInUser.id; 
+        let participant = participants.find(function(participant) {
+           return participant.user.id != logged_user_id;
+        });
+        return participant.user;
+    },
+
+    getImage(id) {
+        return "https://randomuser.me/api/portraits/med/men/" + id + '.jpg';
     },
 
     currentUser(id){
@@ -185,76 +197,75 @@ export default {
             }).then(response => {
                 chat = response.data;
                 if(chat.id) {
-
-                    let token = this.token;
-
-                        axios.request({
-                                headers: {
-                                    Authorization: `Bearer ${token}`
-                                },
-                                method: "GET",
-                                url: `/api/chat-message?chat_id=${chat.id}&page=1&participant_id=${this.currentFilteredUser.id}`,
-                                }).then(response => {
-                                    if(this.currentFilteredUser.id == id) {
-                                        this.chats = response.data.data;
-                                    }
-                            });
-
-                            window.Echo = new Echo({
-                                broadcaster: 'pusher',
-                                key: import.meta.env.VITE_PUSHER_APP_KEY,
-                                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
-                                auth: {
-                                    headers: {
-                                        Authorization: `Bearer ${token}`
-                                    }
-                                },
-                                forceTLS: false,
-                                encrypted: true,
-                                disableStats: true,
-                                enabledTransports: ['ws', 'wss'],
-                                csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
-                            });
-
-                            console.log(window.Echo)
-
-                            window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
-                                console.log(e);
-                                if(currentUser.id) {
-                                    this.chats.push(e.message);
-                                }
-                            });
-                            
-                }else {
-                        let token = this.token;
-                        axios.request({
+                    axios.request({
                             headers: {
-                                Authorization: `Bearer ${token}`
+                                Authorization: `Bearer ${this.token}`
                             },
-                            method: "POST",
-                            url: `/api/chat`,
-                            data: {
-                                user_id: currentUser.id,
-                                logged_user_id: this.loggedInUser.id
-                            },
+                            method: "GET",
+                            url: `/api/chat-message?chat_id=${chat.id}&page=1&participant_id=${this.currentFilteredUser.id}`,
                             }).then(response => {
-                                chat = response.data.data.participants.find(participant => {
-                                    return participant.user_id == currentUser.id;
-                                });
+                                if(this.currentFilteredUser.id == id) {
+                                    this.chats = response.data.data;
+                                }
                         });
+
+                        window.Echo = new Echo({
+                            broadcaster: 'pusher',
+                            key: import.meta.env.VITE_PUSHER_APP_KEY,
+                            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                            authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                            auth: {
+                                headers: {
+                                    Authorization: `Bearer ${this.token}`
+                                }
+                            },
+                            forceTLS: false,
+                            encrypted: true,
+                            disableStats: true,
+                            enabledTransports: ['ws', 'wss'],
+                            csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+                        });
+
+                        window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
+                            if(currentUser.id) {
+                                this.chats.push(e.message);
+                            }
+
+                            if(this.recent_chats.length !== 0) {
+                                this.recent_chats.filter(recent_chat => {
+                                    if(recent_chat.id === chat.id) {
+                                        recent_chat.last_message = e.message;
+                                    }
+                                });
+                            }
+
+                        });         
+                }else {
+                    axios.request({
+                        headers: {
+                            Authorization: `Bearer ${this.token}`
+                        },
+                        method: "POST",
+                        url: `/api/chat`,
+                        data: {
+                            user_id: currentUser.id,
+                            logged_user_id: this.loggedInUser.id
+                        },
+                        }).then(response => {
+                            chat = response.data.data.participants.find(participant => {
+                                return participant.user_id == currentUser.id;
+                            });
+                    });
                 }
         });
     },
 
     sendMessage() {
-        let token = this.token;
-
         this.buttonDisabled = true;
 
         axios.request({
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${this.token}`
             },
             method: "POST",
             url: `/api/chat-message`,
@@ -268,23 +279,96 @@ export default {
                     this.buttonDisabled = false;
                 }, 2000);    
         });
+    },
+  },
 
+  computed: {
+    filteredUsers() {
+        if(this.input) {
+            return this.users.filter(user => {
+                return user.username.toLocaleLowerCase().includes(this.input.toLocaleLowerCase());
+            });
+        } else {
+            return this.users;
+        }
     },
 
-  },
-  mounted() {
-      let token = this.token;
+    sortedData() {
+      return this.recent_chats.slice().sort((a, b) => {
+        const dateA = new Date(a.last_message.created_at);
+        const dateB = new Date(b.last_message.created_at);
+        return dateB - dateA;
+      });
+    }
 
+  },
+
+  mounted() {
       axios.request({
           headers: {
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${this.token}`
           },
           method: "GET",
           url: `/api/user`
           }).then(response => {
               this.users = response.data.data;
       });
+
+      axios.request({
+          headers: {
+              Authorization: `Bearer ${this.token}`
+          },
+          method: "GET",
+          url: `/api/chat`
+          }).then(response => {
+              this.recent_chats = response.data.data;   
+
+              console.log(this.recent_chats);
+              
+              window.Echo = new Echo({
+                broadcaster: 'pusher',
+                key: import.meta.env.VITE_PUSHER_APP_KEY,
+                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                auth: {
+                    headers: {
+                        Authorization: `Bearer ${this.token}`
+                    }
+                },
+                forceTLS: false,
+                encrypted: true,
+                disableStats: true,
+                enabledTransports: ['ws', 'wss'],
+                csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+            });
+
+            axios.request({
+            headers: {
+                Authorization: `Bearer ${this.token}`
+            },
+            method: "GET",
+            url: `/api/chats`
+            }).then(response => {
+                response.data.forEach(chatId => {
+                        window.Echo.private(`chat-${chatId}`)
+                            .listen('NewMessageSent', (e) => {
+                                const chatIndex = this.recent_chats.findIndex(chat => chat.id === chatId);
+                                if (chatIndex !== -1) {
+                                    this.recent_chats[chatIndex].last_message = e.message;
+                                }
+                            });
+                    });
+            }); 
+      });
   }
 
 }
 </script>
+
+<style scoped>
+    .active {
+        background-color: #bbb;
+        padding:0px 10px;
+        border-radius: 10px;
+    }
+</style>

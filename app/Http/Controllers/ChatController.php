@@ -124,4 +124,9 @@ class ChatController extends Controller
 
         return response()->json($chat);   
     }
+
+    public function getAllChats() 
+    {
+        return Chat::pluck('id')->toArray();
+    }
 }
