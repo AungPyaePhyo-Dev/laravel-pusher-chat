@@ -20,6 +20,7 @@ class ChatMessageController extends Controller
         $participantId = $data['participant_id'];
 
         $chatId = $data['chat_id'];
+        
         $currentPage = $data['page'];
         $pageSize = $data['page_size'] ?? 15;
 

@@ -208,13 +208,6 @@ export default {
     getHourAndMinutes(dateString) {
         const date = new Date(dateString);
         const currentDate = new Date();
-
-        let yesterday = new Date(currentDate);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const formattedDate = date.toISOString().slice(0, 10);
-        const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
-        const formattedYesterdayDate = yesterday.toISOString().slice(0, 10);   
         
         const hour = date.getHours();
         const minutes = date.getMinutes();
@@ -317,6 +310,7 @@ export default {
         });
     },
 
+    // send message when button click ( send ) and button disabled till 2 seconds
     sendMessage() {
         this.buttonDisabled = true;
 
@@ -350,6 +344,7 @@ export default {
   },
 
   computed: {
+    // to filter user when typed a letter in search box
     filteredUsers() {
         if(this.input) {
             return this.users.filter(user => {
@@ -360,6 +355,7 @@ export default {
         }
     },
 
+    // order chats with last message ( created_at )
     sortedData() {
       return this.recent_chats.slice().sort((a, b) => {
         const dateA = new Date(a.last_message.created_at);
@@ -368,6 +364,7 @@ export default {
       });
     },
 
+    // chat group by day eg. today, yesterday and date(2024-03-03)
     groupedChats() {
       const grouped = {};
       this.chats.forEach(chat => {
@@ -401,6 +398,7 @@ export default {
         csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
     });
 
+    // get all users
       axios.request({
           headers: {
               Authorization: `Bearer ${this.token}`
@@ -411,6 +409,7 @@ export default {
               this.users = response.data.data;
       });
 
+    // get all chat to show in left sidemenu 
       axios.request({
           headers: {
               Authorization: `Bearer ${this.token}`
@@ -444,16 +443,15 @@ export default {
             url: `/api/chats`
             }).then(response => {
                 response.data.forEach(chatId => {
-                        window.Echo.private(`chat-${chatId}`)
-                            .listen('NewMessageSent', (e) => {
-                                const chatIndex = this.recent_chats.findIndex(chat => chat.id === chatId);
-                                console.log(chatIndex);
-                                if (chatIndex !== -1) {
-                                    this.recent_chats[chatIndex].last_message = e.message;
-                                    this.recent_chats[chatIndex].isNewMessage = true; 
-                                }
-                            });
-                    });
+                    window.Echo.private(`chat-${chatId}`)
+                        .listen('NewMessageSent', (e) => {
+                            const chatIndex = this.recent_chats.findIndex(chat => chat.id === chatId);
+                            if (chatIndex !== -1) {
+                                this.recent_chats[chatIndex].last_message = e.message;
+                                this.recent_chats[chatIndex].isNewMessage = true; 
+                            }
+                        });
+                });
             }); 
       });
   }
