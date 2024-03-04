@@ -43,6 +43,9 @@ class ChatMessageController extends Controller
                                 ->with('user')
                                 ->orderBy('id', 'asc')
                                 ->get();
+                                // ->groupBy(function ($message) {
+                                //     return $message->created_at->format('Y-m-d'); // Group by date (Y-m-d)
+                                // });
                                 
         return $this->success($messages);
     }

@@ -39,6 +39,7 @@
             overflow: hidden;
             overflow-y: scroll;
             height: calc(100vh - 25vh);
+            scroll-behavior: smooth;
         }
 
         .message-input{

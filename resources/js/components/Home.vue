@@ -20,11 +20,11 @@
                                 <div class="w-100 ms-2">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <span class="fw-bold">{{ getParticipantUser(recent_chat.participants).username }}</span>
-                                            <p>{{ getLastMessage(recent_chat) }}</p>
+                                            <span :class="recent_chat.isNewMessage ? 'fw-bold' : '' ">{{ getParticipantUser(recent_chat.participants).username }}</span>
+                                            <p :class="recent_chat.isNewMessage ? 'fw-bold' : '' ">{{ getLastMessage(recent_chat) }}</p>
                                         </div>
                                         <div>
-                                            <span>{{  getHourAndMinutes(recent_chat.last_message.created_at) }}</span>
+                                            <span :class="recent_chat.isNewMessage ? 'fw-bold' : '' ">{{  getLastMessageTime(recent_chat.last_message.created_at) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -43,13 +43,18 @@
                             <h5 style="cursor:pointer;"><span>...</span></h5>
                         </div>
                     </div>
+                    
                     <hr>
-                <div class="scrollable mx-3">
+
+                <div class="scrollable mx-3" id="scrollableDiv">
                     
                     <div class="" v-if="currentFilteredUser">
                         <div class="chat">
-                                <div class="card-body" ref="hasScrolledToBottom">
-                                    <template v-for="chat in chats" :key="chat.id">
+                                <div class="card-body" ref="hasScrolledToBottom" v-for="(chatGroup, date) in groupedChats" :key="date">
+                                            <div class="text-center">
+                                               {{ getDay(date) }}
+                                            </div>
+                                    <template v-for="chat in chatGroup" :key="chat.id" >
                                         <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
                                             <p>
                                                 <strong class="primary-font">
@@ -77,13 +82,13 @@
                         </div>
                     </div>
                     <div v-else>
-                        <div class="d-flex justify-content-center my-5">
-                            Select a user to chat
+                        <div style="overflow:hidden; height: calc(100vh - 40vh);" class="align-items-center d-flex justify-content-center my-5">
+                            <h5>Select a user to chat</h5>
                         </div>
                     </div>
                 </div>
-                <div class="d-flex mx-3 my-3">
-                    <input type="text" class="form-control me-3" v-model="message">
+                <div class="d-flex mx-3 my-3" v-if="currentFilteredUser">
+                    <input type="text" class="form-control me-3" v-model="message" v-on:keyup.enter="onEnter">
                     <button class="button" :disabled="buttonDisabled" @click="sendMessage">Send</button>
                 </div>
             </div>
@@ -108,6 +113,8 @@ let chat = null;
 let image = '';
 let input = '';
 let recent_chats = [];
+let yesterday = 'yesterday';
+let day = "";
 
 export default {
   props: ['user', 'token'],
@@ -121,7 +128,7 @@ export default {
   data() {
     let loggedInUser = this.user;
     let token = this.token;
-            
+
         return {
             users : [],
             currentFilteredUser: '',
@@ -131,10 +138,40 @@ export default {
             buttonDisabled: false,
             recent_chats,
             image,
-            input
+            input,
+            yesterday,
+            day
         }
   },
   methods: {
+    onEnter() {
+        this.sendMessage();
+    },
+
+    scrollBottom() {
+        var scrollableDiv = document.getElementById("scrollableDiv");
+        scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+    },
+    
+    getDay(time) {
+        const date = new Date(time);
+        const currentDate = new Date();
+
+        let yesterday = new Date(currentDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const formattedDate = date.toISOString().slice(0, 10);
+        const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
+        const formattedYesterdayDate = yesterday.toISOString().slice(0, 10);  
+
+        if(formattedDate == formattedCurrentDate) {
+            return "Today";
+        }else if(formattedDate == formattedYesterdayDate) {
+            return "yesterday";
+        } else {
+            return time;
+        }
+    },
 
     getLastMessage(recent_chat) {
         if(recent_chat.last_message.message.length > 16) {
@@ -142,13 +179,18 @@ export default {
         }
         return recent_chat.last_message.message.substring(0, 17);
     },
-    
-    getHourAndMinutes(dateString) {
+
+    getLastMessageTime(dateString)
+     {
         const date = new Date(dateString);
         const currentDate = new Date();
 
+        let yesterday = new Date(currentDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+
         const formattedDate = date.toISOString().slice(0, 10);
         const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
+        const formattedYesterdayDate = yesterday.toISOString().slice(0, 10);  
 
         if (formattedDate === formattedCurrentDate) {
             const hour = date.getHours();
@@ -156,9 +198,29 @@ export default {
             const amPM = hour >= 12 ? 'PM' : 'AM';
             const formattedHour = hour % 12 || 12;
             return `${formattedHour}:${minutes < 10 ? '0' : ''}${minutes} ${amPM}`; // Padding with zero if minutes < 10
-        } else {
+        }else if(formattedDate === formattedYesterdayDate) {
+            return this.yesterday;
+        }else {
             return formattedDate.slice(5, 10);
         }
+     },
+
+    getHourAndMinutes(dateString) {
+        const date = new Date(dateString);
+        const currentDate = new Date();
+
+        let yesterday = new Date(currentDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const formattedDate = date.toISOString().slice(0, 10);
+        const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
+        const formattedYesterdayDate = yesterday.toISOString().slice(0, 10);   
+        
+        const hour = date.getHours();
+        const minutes = date.getMinutes();
+        const amPM = hour >= 12 ? 'PM' : 'AM';
+        const formattedHour = hour % 12 || 12;
+        return `${formattedHour}:${minutes < 10 ? '0' : ''}${minutes} ${amPM}`; // Padding with zero if minutes < 10
     },
 
     getParticipantUser(participants) {
@@ -174,9 +236,12 @@ export default {
     },
 
     currentUser(id){
+
       if(chat !== null) {
             window.Echo.leave(`chat-${chat.id}`);
       }
+
+      this.scrollBottom();
 
       let currentUser = this.users.find(user => {
           return user.id == id;
@@ -197,6 +262,14 @@ export default {
             }).then(response => {
                 chat = response.data;
                 if(chat.id) {
+
+                    const chatIndex = this.recent_chats.findIndex(recent_chat => recent_chat.id === chat.id);
+
+                    if (chatIndex !== -1) {
+                        this.recent_chats[chatIndex].isNewMessage = false;
+                    }
+
+                        
                     axios.request({
                             headers: {
                                 Authorization: `Bearer ${this.token}`
@@ -209,24 +282,8 @@ export default {
                                 }
                         });
 
-                        window.Echo = new Echo({
-                            broadcaster: 'pusher',
-                            key: import.meta.env.VITE_PUSHER_APP_KEY,
-                            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                            authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
-                            auth: {
-                                headers: {
-                                    Authorization: `Bearer ${this.token}`
-                                }
-                            },
-                            forceTLS: false,
-                            encrypted: true,
-                            disableStats: true,
-                            enabledTransports: ['ws', 'wss'],
-                            csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
-                        });
-
                         window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
+
                             if(currentUser.id) {
                                 this.chats.push(e.message);
                             }
@@ -277,9 +334,19 @@ export default {
                 this.message = ''; 
                 setTimeout(() => {
                     this.buttonDisabled = false;
+                    this.scrollBottom();
                 }, 2000);    
         });
     },
+
+    getDateFromTimestamp(timestamp) {
+      const dateObj = new Date(timestamp);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
   },
 
   computed: {
@@ -299,11 +366,41 @@ export default {
         const dateB = new Date(b.last_message.created_at);
         return dateB - dateA;
       });
+    },
+
+    groupedChats() {
+      const grouped = {};
+      this.chats.forEach(chat => {
+        const date = this.getDateFromTimestamp(chat.created_at);
+        if (!grouped[date]) {
+          grouped[date] = [];
+        }
+        grouped[date].push(chat);
+      });
+      return grouped;
     }
 
   },
 
   mounted() {
+
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: import.meta.env.VITE_PUSHER_APP_KEY,
+        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+        authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+        auth: {
+            headers: {
+                Authorization: `Bearer ${this.token}`
+            }
+        },
+        forceTLS: false,
+        encrypted: true,    
+        disableStats: true,
+        enabledTransports: ['ws', 'wss'],
+        csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
+    });
+
       axios.request({
           headers: {
               Authorization: `Bearer ${this.token}`
@@ -322,9 +419,6 @@ export default {
           url: `/api/chat`
           }).then(response => {
               this.recent_chats = response.data.data;   
-
-              console.log(this.recent_chats);
-              
               window.Echo = new Echo({
                 broadcaster: 'pusher',
                 key: import.meta.env.VITE_PUSHER_APP_KEY,
@@ -353,8 +447,10 @@ export default {
                         window.Echo.private(`chat-${chatId}`)
                             .listen('NewMessageSent', (e) => {
                                 const chatIndex = this.recent_chats.findIndex(chat => chat.id === chatId);
+                                console.log(chatIndex);
                                 if (chatIndex !== -1) {
                                     this.recent_chats[chatIndex].last_message = e.message;
+                                    this.recent_chats[chatIndex].isNewMessage = true; 
                                 }
                             });
                     });
@@ -370,5 +466,6 @@ export default {
         background-color: #bbb;
         padding:0px 10px;
         border-radius: 10px;
+        transition: 0.5s;
     }
 </style>
