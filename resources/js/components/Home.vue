@@ -387,7 +387,7 @@ export default {
         broadcaster: 'pusher',
         key: import.meta.env.VITE_PUSHER_APP_KEY,
         cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-        authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+        authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
         auth: {
             headers: {
                 Authorization: `Bearer ${this.token}`
@@ -424,7 +424,7 @@ export default {
                 broadcaster: 'pusher',
                 key: import.meta.env.VITE_PUSHER_APP_KEY,
                 cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
                 auth: {
                     headers: {
                         Authorization: `Bearer ${this.token}`
