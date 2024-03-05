@@ -15,6 +15,7 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
         $data['username'] = strstr($data['email'], '@', true);
+        $data['is_admin'] = $request->is_admin ?? 0;
 
         $user = User::create($data);
         $token = $user->createToken(User::USER_TOKEN);
