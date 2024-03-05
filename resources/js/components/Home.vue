@@ -10,7 +10,7 @@
                             <User :user="user" @currentUser="currentUser" />
                         </div>
                     </div>
-                    <div class="my-4">
+                    <div class="my-4 scrollable">
                         <h6 class="my-4">Recent</h6>
                         <div class="" v-for="recent_chat in sortedData" :key="recent_chat.id">
                             <div class="d-flex align-items-center my-3" :class="{ active : currentFilteredUser.id == getParticipantUser(recent_chat.participants).id }"  @click="currentUser(getParticipantUser(recent_chat.participants).id)" style="cursor:pointer;">
@@ -115,6 +115,7 @@ let input = '';
 let recent_chats = [];
 let yesterday = 'yesterday';
 let day = "";
+let isNewMessage = false;
 
 export default {
   props: ['user', 'token'],
@@ -136,6 +137,7 @@ export default {
             loggedInUser,
             message: '',
             buttonDisabled: false,
+            isNewMessage,
             recent_chats,
             image,
             input,
@@ -181,7 +183,7 @@ export default {
     },
 
     getLastMessageTime(dateString)
-     {
+    {
         const date = new Date(dateString);
         const currentDate = new Date();
 
@@ -203,7 +205,7 @@ export default {
         }else {
             return formattedDate.slice(5, 10);
         }
-     },
+    },
 
     getHourAndMinutes(dateString) {
         const date = new Date(dateString);
@@ -310,7 +312,7 @@ export default {
         });
     },
 
-    // send message when button click ( send ) and button disabled till 2 seconds
+    // send message when button click (send) and button disabled till 2 seconds
     sendMessage() {
         this.buttonDisabled = true;
 
@@ -357,10 +359,10 @@ export default {
 
     // order chats with last message ( created_at )
     sortedData() {
-      return this.recent_chats.slice().sort((a, b) => {
-        const dateA = new Date(a.last_message.created_at);
-        const dateB = new Date(b.last_message.created_at);
-        return dateB - dateA;
+      return this.recent_chats.slice().sort((first, second) => {
+        const firstDate = new Date(first.last_message.created_at);
+        const secondDate = new Date(second.last_message.created_at);
+        return secondDate - firstDate;
       });
     },
 
