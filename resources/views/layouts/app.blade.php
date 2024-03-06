@@ -49,10 +49,16 @@
         }
 
         .search-input {
-            background: #bbb;
+            /* background: #bbb; */
+            background: #cdd5dd;
             border:none;
             font-size: 12px;
-            padding: 5px 10px;
+            /* padding: 5px 10px; */
+        }
+
+        .search-input-group {
+            background: #cdd5dd;
+            padding: 0;
             border-radius: 5px;
         }
 

@@ -1,10 +1,15 @@
 <template>
     <div class="container-fluid">
         <div class="row justify-content-center ps-5">
-            <div class="col-lg-2 p-0 vh-100 py-3" style="background-color: #d9dcdf;">
+            <div class="col-lg-2 p-0 vh-100 py-3" style="background-color: #e9ecef;"> 
                 <div class="mx-3">
                     <h5 class="">Chats</h5>
-                    <input type="text" placeholder="Search users" v-model="input" class="w-100 search-input p-2 my-3">
+                    <div class="d-flex justify-content-center align-items-center search-input-group px-2 py-2 my-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 50 50">
+                            <path d="M 21 3 C 11.621094 3 4 10.621094 4 20 C 4 29.378906 11.621094 37 21 37 C 24.710938 37 28.140625 35.804688 30.9375 33.78125 L 44.09375 46.90625 L 46.90625 44.09375 L 33.90625 31.0625 C 36.460938 28.085938 38 24.222656 38 20 C 38 10.621094 30.378906 3 21 3 Z M 21 5 C 29.296875 5 36 11.703125 36 20 C 36 28.296875 29.296875 35 21 35 C 12.703125 35 6 28.296875 6 20 C 6 11.703125 12.703125 5 21 5 Z"></path>
+                        </svg>
+                        <input type="text" placeholder="Search users" v-model="input" class="w-100 search-input">
+                    </div>
                     <div class="d-flex overflow-auto position-relative">
                         <div v-for="user in filteredUsers" :key="user.id" class="mx-2">
                             <User :user="user" @currentUser="currentUser" />
@@ -40,10 +45,10 @@
                             <h6 class="mx-3">{{ currentFilteredUser.username }}</h6>
                         </div>
                         <div class="me-4 my-auto">
-                            <h5 style="cursor:pointer;"><span>...</span></h5>
+                            <h5 style="cursor:pointer;" @click="isOpen = true"><span>...</span></h5>
                         </div>
                     </div>
-                    
+
                     <hr>
 
                 <div class="scrollable mx-3" id="scrollableDiv">
@@ -94,6 +99,9 @@
             </div>
             
         </div>
+
+        <Modal :open="isOpen" @close="isOpen = !isOpen" :image="getImage(currentFilteredUser.id)" :filteredUser="currentFilteredUser" />
+        
     </div>
 </template>
 
@@ -102,6 +110,8 @@
 import ChatMessage from './ChatMessage.vue';
 import ChatForm from './ChatForm.vue';
 import User from './User.vue'
+import Modal from "./modal/Modal.vue"
+
 
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
@@ -123,7 +133,8 @@ export default {
   components: {
     ChatMessage,
     ChatForm,
-    User    
+    User,
+    Modal
   },
 
   data() {
@@ -131,6 +142,7 @@ export default {
     let token = this.token;
 
         return {
+            showModal: false,
             users : [],
             currentFilteredUser: '',
             chats: [],
@@ -142,7 +154,8 @@ export default {
             image,
             input,
             yesterday,
-            day
+            day,
+            isOpen: false
         }
   },
   methods: {
@@ -463,7 +476,7 @@ export default {
 
 <style scoped>
     .active {
-        background-color: #bbb;
+        background-color: #cdd5dd;
         padding:0px 10px;
         border-radius: 10px;
         transition: 0.5s;
