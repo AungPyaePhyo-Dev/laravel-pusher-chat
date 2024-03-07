@@ -19,10 +19,16 @@ class AuthController extends Controller
         $user = User::create($data);
         $token = $user->createToken(User::USER_TOKEN);
 
-        return $this->success([
+        return response()->json([
             'user' => $user,
-            'token' => $token->plainTextToken
-            ], 'User has been register successfully');
+            'token' => $token->plainTextToken,
+            'message' => 'User has been register successfully!'
+        ]);
+
+        // return $this->success([
+        //     'user' => $user,
+        //     'token' => $token->plainTextToken
+        //     ], 'User has been register successfully');
     }   
 
     public function login(LoginRequest $request) {
@@ -41,11 +47,17 @@ class AuthController extends Controller
         if($request->type && $request->type == "web") {
             return redirect()->route('home')->with(['token' => $token->plainTextToken, 'user' => $user]);
         }
+
+        return response()->json([
+                'user' => $user,
+                'token' => $token->plainTextToken,
+                'message' => 'Login successfully'
+        ]);
         
-        return $this->success([
-            'user' => $user,
-            'token' => $token->plainTextToken
-        ], 'Login successfully!');
+        // return $this->success([
+        //     'user' => $user,
+        //     'token' => $token->plainTextToken
+        // ], 'Login successfully!');
     }
 
     private function isValidCredential(Request $request) 
@@ -76,11 +88,19 @@ class AuthController extends Controller
     }
 
     public function loginWithToken() {
-        return $this->success(auth()->user(), 'Login Successfully');
+        return response()->json([
+            'user' => auth()->user(),
+            'message' => 'Login Successfully'
+        ]);
+        // return $this->success(auth()->user(), 'Login Successfully');
     }
 
     public function logout(Request $request) {
         $request->user()->currentAccessToken()->delete();   
-        return $this->success(null, 'Logout Successfully');
+        return response()->json([
+            'user' => null,
+            'message' => 'Login Successfully'
+        ]);
+        // return $this->success(null, 'Logout Successfully');
     }
 }

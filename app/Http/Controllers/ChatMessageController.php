@@ -47,8 +47,11 @@ class ChatMessageController extends Controller
                                 // ->groupBy(function ($message) {
                                 //     return $message->created_at->format('Y-m-d'); // Group by date (Y-m-d)
                                 // });
-                                
-        return $this->success($messages);
+
+        return response()->json([
+            'chats' => $messages,
+            'success' => true,
+        ], 200);
     }
 
     public function store(StoreMessageRequest $request) {
@@ -56,12 +59,17 @@ class ChatMessageController extends Controller
         $data['user_id'] = auth()->user()->id;
 
         $chatMessage = ChatMessage::create($data);
-        $chatMessage->load('user');
+        $chatMessage->load('user', 'chat', 'chat.lastMessage', 'chat.participants', 'chat.participants.user');
 
         // TODO send broadcast event to pusher and send notification to onesingle service
         $this->sendNotificationToOther($chatMessage);
 
-        return $this->success($chatMessage, 'Message has been sent successfully');
+        return response()->json([
+            'messages' => $chatMessage,
+            'status' => true
+        ], 200);
+
+        // return $this->success($chatMessage, 'Message has been sent successfully');
     }
 
     private function sendNotificationToOther(ChatMessage $chatMessage) 

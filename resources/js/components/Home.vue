@@ -45,7 +45,9 @@
                             <h6 class="mx-3">{{ currentFilteredUser.username }}</h6>
                         </div>
                         <div class="me-4 my-auto">
-                            <h5 style="cursor:pointer;" @click="isOpen = true"><span>...</span></h5>
+                            <h5 style="cursor:pointer;" 
+                                @click="openModal"
+                            ><span>...</span></h5>
                         </div>
                     </div>
 
@@ -55,35 +57,35 @@
                     
                     <div class="" v-if="currentFilteredUser">
                         <div class="chat">
-                                <div class="card-body" ref="hasScrolledToBottom" v-for="(chatGroup, date) in groupedChats" :key="date">
-                                            <div class="text-center">
-                                               {{ getDay(date) }}
-                                            </div>
-                                    <template v-for="chat in chatGroup" :key="chat.id" >
-                                        <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
-                                            <p>
-                                                <strong class="primary-font">
-                                                {{ chat.user.username }} :
-                                                </strong>
-                                                {{ chat.message }} <br>
-                                                <span>{{ getHourAndMinutes(chat.created_at) }}</span>
-                                            </p>
-                                        </div>
-                                        <div class="message message-send" v-if="chat.user.id == loggedInUser.id">
-                                            <div>
-                                                <p>
-                                                <strong class="primary-font">
-                                                You ( {{ chat.user.username }} ):
-                                                </strong>
-                                                {{ chat.message }}
-                                                <br>
-                                                <span>{{ getHourAndMinutes(chat.created_at) }}</span>
-                                            </p> 
-                                            
-                                            </div>
-                                        </div>
-                                    </template>
+                            <div class="card-body" ref="hasScrolledToBottom" v-for="(chatGroup, date) in groupedChats" :key="date">
+                                <div class="text-center">
+                                    {{ getDay(date) }}
                                 </div>
+                                <div v-for="chat in chatGroup" :key="chat.id" >
+                                    <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
+                                        <p>
+                                            <strong class="primary-font">
+                                            {{ chat.user.username }} :
+                                            </strong>
+                                            {{ chat.message }} <br>
+                                            <span>{{ getHourAndMinutes(chat.created_at) }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="message message-send" v-if="chat.user.id == loggedInUser.id">
+                                        <div>
+                                            <p>
+                                            <strong class="primary-font">
+                                            You ( {{ chat.user.username }} ):
+                                            </strong>
+                                            {{ chat.message }}
+                                            <br>
+                                            <span>{{ getHourAndMinutes(chat.created_at) }}</span>
+                                        </p> 
+                                        
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div v-else>
@@ -97,11 +99,43 @@
                     <button class="button" :disabled="buttonDisabled" @click="sendMessage">Send</button>
                 </div>
             </div>
-            
-        </div>
 
-        <Modal :open="isOpen" @close="isOpen = !isOpen" :image="getImage(currentFilteredUser.id)" :filteredUser="currentFilteredUser" />
-        
+            <div class="modal" v-if="isModalOpen">
+                <div  ref="modalRef">
+                    <div class="vue-modal-content">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>About</h6>
+                            <button type="button" @click="closeModal" class="px-3 bg-white" style="border:none; font-weight: bold; color:red;">x</button>
+                        </div>
+
+                        <div class="text-center my-3">
+                            <img :src="image" class="image-detail" alt="">
+                            <h5 class="my-2">{{ currentFilteredUser.username }}</h5>
+                        </div>
+                        <hr>
+                        <div class="text-group my-3 mx-3">
+                            <h6>Name</h6>
+                            <span>{{ currentFilteredUser.username }}</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="text-group my-3 mx-3">
+                            <h6>Email</h6>
+                            <span>{{ currentFilteredUser.email }}</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="text-group my-3 mx-3">
+                            <h6>Phone</h6>
+                            <span>{{ currentFilteredUser.phone ?? '' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 </template>
 
@@ -109,8 +143,7 @@
 
 import ChatMessage from './ChatMessage.vue';
 import ChatForm from './ChatForm.vue';
-import User from './User.vue'
-import Modal from "./modal/Modal.vue"
+import User from './User.vue';
 
 
 import Echo from 'laravel-echo';
@@ -134,7 +167,6 @@ export default {
     ChatMessage,
     ChatForm,
     User,
-    Modal
   },
 
   data() {
@@ -142,7 +174,6 @@ export default {
     let token = this.token;
 
         return {
-            showModal: false,
             users : [],
             currentFilteredUser: '',
             chats: [],
@@ -155,10 +186,26 @@ export default {
             input,
             yesterday,
             day,
-            isOpen: false
+            isModalOpen: false
         }
   },
   methods: {
+
+    openModal() {
+        this.isModalOpen = true;
+        document.addEventListener('mouseup', this.closeModalOnClickOutside);
+    },
+    closeModal() {
+        this.isModalOpen = false;
+        document.removeEventListener('mouseup', this.closeModalOnClickOutside);
+    },
+    closeModalOnClickOutside(event) {
+        const modal = this.$refs.modalRef;
+        if (!modal.contains(event.target)) {
+        this.closeModal();
+        }
+    },
+
     onEnter() {
         this.sendMessage();
     },
@@ -286,7 +333,7 @@ export default {
                             url: `/api/chat-message?chat_id=${chat.id}&page=1&participant_id=${this.currentFilteredUser.id}`,
                             }).then(response => {
                                 if(this.currentFilteredUser.id == id) {
-                                    this.chats = response.data.data;
+                                    this.chats = response.data.chats;
                                 }
                         });
 
@@ -305,7 +352,7 @@ export default {
                             }
 
                         });         
-                }else {
+                } else {
                     axios.request({
                         headers: {
                             Authorization: `Bearer ${this.token}`
@@ -317,11 +364,15 @@ export default {
                             logged_user_id: this.loggedInUser.id
                         },
                         }).then(response => {
-                            chat = response.data.data.participants.find(participant => {
+                            chat = response.data.chat.participants.find(participant => {
                                 return participant.user_id == currentUser.id;
                             });
                     });
                 }
+        }).catch(error => {
+            if(error.response) {
+                alert(error.response.data.message + ", please wait about 40s!");
+            }
         });
     },
 
@@ -340,6 +391,14 @@ export default {
                 chat_id: chat.id
             },
             }).then(response => {
+                let recent_chat = this.recent_chats.find((recent_chat) => {
+                        return recent_chat.id == response.data.messages.chat.id;
+                });
+
+                if(!recent_chat) {
+                    this.recent_chats.push(response.data.messages.chat);
+                }
+
                 this.message = ''; 
                 setTimeout(() => {
                     this.buttonDisabled = false;
@@ -400,7 +459,8 @@ export default {
         broadcaster: 'pusher',
         key: import.meta.env.VITE_PUSHER_APP_KEY,
         cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-        authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
+        authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+        // authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
         auth: {
             headers: {
                 Authorization: `Bearer ${this.token}`
@@ -421,7 +481,7 @@ export default {
           method: "GET",
           url: `/api/user`
           }).then(response => {
-              this.users = response.data.data;
+              this.users = response.data.users;
       });
 
     // get all chat to show in left sidemenu 
@@ -432,12 +492,14 @@ export default {
           method: "GET",
           url: `/api/chat`
           }).then(response => {
-              this.recent_chats = response.data.data;   
+              this.recent_chats = response.data.chats;  
+               
               window.Echo = new Echo({
                 broadcaster: 'pusher',
                 key: import.meta.env.VITE_PUSHER_APP_KEY,
                 cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
+                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
+                // authEndpoint: 'http://customerchat.ntrcarpartsmm.xyz/api/broadcasting/auth',
                 auth: {
                     headers: {
                         Authorization: `Bearer ${this.token}`
@@ -481,4 +543,32 @@ export default {
         border-radius: 10px;
         transition: 0.5s;
     }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: right;
+    }
+
+
+    .vue-modal-content {
+        position: relative;
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+        background-clip: padding-box;
+        border-radius: 0.3rem;
+        width: 400px;
+        padding: 1rem;
+        margin: 10px;
+    }
+
+    .image-detail {
+        border-radius: 50%;
+    }
+
 </style>

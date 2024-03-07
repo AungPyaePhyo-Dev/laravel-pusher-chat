@@ -27,7 +27,10 @@ class ChatController extends Controller
                     ->with('lastMessage.user', 'participants.user')
                     ->get();
 
-        return $this->success($chats);
+        return response()->json([
+            'chats' => $chats,
+            'success' => true,
+        ], 200);
     }
 
     /**
@@ -54,11 +57,17 @@ class ChatController extends Controller
                     ]
                 ]);
             $chat->refresh()->load('lastMessage.user', 'participants.user');
-            return $this->success($chat);
+            
+            return response()->json([
+                'chat' => $chat,
+                'success' => true,
+            ], 200);
         }
 
-        return $this->success($previousChat->load('lastMessage.user', 'participants.user'));
-
+        return response()->json([
+            'chat' => $previousChat->load('lastMessage.user', 'participants.user'),
+            'success' => true,
+        ], 200);
     }
 
     private function getPreviousChat(int $otherUserId) {
@@ -93,7 +102,10 @@ class ChatController extends Controller
     public function show(Chat $chat)
     {
         $chat->load('user', 'lastMessage.user', 'participants.user', 'participants.chat');
-        return $this->success($chat);
+        return response()->json([
+            'chat' => $chat
+        ]);
+        // return $this->success($chat);
     }
 
     /**

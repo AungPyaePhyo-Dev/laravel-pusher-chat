@@ -14,7 +14,10 @@ class UserController extends Controller
             $users = User::with('chats', 'messages', 'chatParticipants')->where('id', '!=', auth()->user()->id)->where('is_admin', '=', 1)->get();
         }
         
-        return $this->success($users);
+        return response()->json([
+            'users' => $users,
+            'success' => true,
+        ], 200);
     }
 
     public function getChats($userId) {

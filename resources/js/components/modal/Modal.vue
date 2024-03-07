@@ -1,36 +1,6 @@
 <template>
     <div class="vue-modal" v-show="open" v-if="filteredUser">
-        <div class="vue-modal-inner">
-                <div class="vue-modal-content">
-                    <div class="d-flex justify-content-between align-items-center">
-                    <h6>About</h6>
-                    <button type="button" @click="$emit('close')" style="border:none; font-weight: bold; color:red;">x</button>
-                </div>
-                <div class="text-center my-3">
-                    <img :src="image" class="image-detail" alt="">
-                    <h5 class="my-2">{{ filteredUser.username }}</h5>
-                </div>
-                <hr>
-                <div class="text-group my-3 mx-3">
-                    <h6>Name</h6>
-                    <span>{{ filteredUser.username }}</span>
-                </div>
-
-                <hr>
-
-                <div class="text-group my-3 mx-3">
-                    <h6>Email</h6>
-                    <span>{{ filteredUser.email }}</span>
-                </div>
-
-                <hr>
-
-                <div class="text-group my-3 mx-3">
-                    <h6>Phone</h6>
-                    <span>{{ filteredUser.phone ?? '' }}</span>
-                </div>
-            </div>
-        </div>
+        <h1>Hello</h1>
     </div>
 </template>
 
@@ -69,7 +39,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
   overflow-x: hidden;
   overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.4);
