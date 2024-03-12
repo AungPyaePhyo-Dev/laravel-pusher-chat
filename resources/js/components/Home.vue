@@ -186,7 +186,8 @@ export default {
             input,
             yesterday,
             day,
-            isModalOpen: false
+            isModalOpen: false,
+            clickCounts: {}
         }
   },
   methods: {
@@ -291,10 +292,10 @@ export default {
     },
 
     currentUser(id){
-
-      if(chat !== null) {
-            window.Echo.leave(`chat-${chat.id}`);
-      }
+        if (!this.clickCounts[id]) {
+                this.clickCounts[id] = 0;
+        }
+        this.clickCounts[id]++;
 
       this.scrollBottom();
 
@@ -315,63 +316,57 @@ export default {
             method: "GET",
             url: `/api/related-chat?current_user_id=${this.currentFilteredUser.id}&loggedin_user_id=${this.loggedInUser.id}`,
             }).then(response => {
-                chat = response.data;
-                if(chat.id) {
 
-                    const chatIndex = this.recent_chats.findIndex(recent_chat => recent_chat.id === chat.id);
+                        chat = response.data;
 
-                    if (chatIndex !== -1) {
-                        this.recent_chats[chatIndex].isNewMessage = false;
-                    }
+                        if(chat.id) {
+                            const chatIndex = this.recent_chats.findIndex(recent_chat => recent_chat.id === chat.id);
 
-                        
-                    axios.request({
-                            headers: {
-                                Authorization: `Bearer ${this.token}`
-                            },
-                            method: "GET",
-                            url: `/api/chat-message?chat_id=${chat.id}&page=1&participant_id=${this.currentFilteredUser.id}`,
-                            }).then(response => {
-                                if(this.currentFilteredUser.id == id) {
-                                    this.chats = response.data.chats;
-                                }
-                        });
-
-                        window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
-
-                            if(currentUser.id) {
-                                this.chats.push(e.message);
+                            if (chatIndex !== -1) {
+                                this.recent_chats[chatIndex].isNewMessage = false;
                             }
 
-                            if(this.recent_chats.length !== 0) {
-                                this.recent_chats.filter(recent_chat => {
-                                    if(recent_chat.id === chat.id) {
-                                        recent_chat.last_message = e.message;
-                                    }
+                            axios.request({
+                                    headers: {
+                                        Authorization: `Bearer ${this.token}`
+                                    },
+                                    method: "GET",
+                                    url: `/api/chat-message?chat_id=${chat.id}&page=1&participant_id=${this.currentFilteredUser.id}`,
+                                    }).then(response => {
+                                        if(this.currentFilteredUser.id == id) {
+                                            this.chats = response.data.chats;
+                                        }
                                 });
-                            }
 
-                        });         
-                } else {
-                    axios.request({
-                        headers: {
-                            Authorization: `Bearer ${this.token}`
-                        },
-                        method: "POST",
-                        url: `/api/chat`,
-                        data: {
-                            user_id: currentUser.id,
-                            logged_user_id: this.loggedInUser.id
-                        },
-                        }).then(response => {
-                            chat = response.data.chat.participants.find(participant => {
-                                return participant.user_id == currentUser.id;
+                                if(this.clickCounts[id] < 2) {
+                                   window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
+                                    if(currentUser.id && e.chat_id == chat.id) {
+                                            this.chats.push(e.message);
+                                    }
+                                }); 
+
+                                }      
+                        } else {
+                            axios.request({
+                                headers: {
+                                    Authorization: `Bearer ${this.token}`
+                                },
+                                method: "POST",
+                                url: `/api/chat`,
+                                data: {
+                                    user_id: currentUser.id,
+                                    logged_user_id: this.loggedInUser.id
+                                },
+                                }).then(response => {
+                                    chat = response.data.chat.participants.find(participant => {
+                                        return participant.user_id == currentUser.id;
+                                    });
                             });
-                    });
-                }
+                        }
+
         }).catch(error => {
             if(error.response) {
-                alert(error.response.data.message + ", please wait about 40s!");
+                alert(error.response.data.message + ", please wait a few seconds!");
             }
         });
     },
@@ -525,7 +520,9 @@ export default {
                             const chatIndex = this.recent_chats.findIndex(chat => chat.id === chatId);
                             if (chatIndex !== -1) {
                                 this.recent_chats[chatIndex].last_message = e.message;
-                                this.recent_chats[chatIndex].isNewMessage = true; 
+                                if(e.message.user_id !== this.loggedInUser.id) {
+                                    this.recent_chats[chatIndex].isNewMessage = true;
+                                } 
                             }
                         });
                 });

@@ -41,7 +41,10 @@ class ChatController extends Controller
         $data = $this->prepareStoreData($request);
 
         if($data['userId'] === $data['otherUserId']) {
-            return $this->error('You cannot send chat to your own');
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot send chat to your own'
+            ]);
         }
 
         $previousChat = $this->getPreviousChat($data['otherUserId']);
