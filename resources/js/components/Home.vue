@@ -567,5 +567,6 @@ export default {
     .image-detail {
         border-radius: 50%;
     }
+    
 
 </style>
