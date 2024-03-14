@@ -469,3 +469,4 @@ export default {
         transition: 0.5s;
     }
 </style>
+
