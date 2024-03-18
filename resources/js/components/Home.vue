@@ -96,7 +96,7 @@
                 </div>
                 <div class="d-flex mx-3 my-3" v-if="currentFilteredUser">
                     <input type="text" class="form-control me-3" v-model="message" v-on:keyup.enter="onEnter">
-                    <button class="button" :disabled="buttonDisabled" @click="sendMessage">Send</button>
+                    <button class="button btn btn-primary" :disabled="buttonDisabled" @click="sendMessage">Send</button>
                 </div>
             </div>
 
@@ -141,8 +141,7 @@
 
 <script>
 
-import ChatMessage from './ChatMessage.vue';
-import ChatForm from './ChatForm.vue';
+
 import User from './User.vue';
 
 
@@ -164,8 +163,6 @@ export default {
   props: ['user', 'token'],
 
   components: {
-    ChatMessage,
-    ChatForm,
     User,
   },
 
@@ -208,7 +205,9 @@ export default {
     },
 
     onEnter() {
+
         this.sendMessage();
+        
     },
 
     scrollBottom() {
