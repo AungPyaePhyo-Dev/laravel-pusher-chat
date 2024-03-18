@@ -21,6 +21,7 @@ Broadcast::routes(['middleware' => ['auth:sanctum']]);
 |
 */
 
+
 Route::prefix('auth')
     ->as('auth.')
     ->group(function() {
