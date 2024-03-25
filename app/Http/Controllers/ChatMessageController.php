@@ -56,6 +56,13 @@ class ChatMessageController extends Controller
 
     public function store(StoreMessageRequest $request) {
         $data = $request->validated();
+
+        if($request->type && $request->type == 1) {
+            $image_path = \Storage::disk('public')->putFile('chat-images', $request->message);
+            $data['message'] = $image_path;
+            $data['type'] = $request->type;
+        }
+        
         $data['user_id'] = auth()->user()->id;
 
         $chatMessage = ChatMessage::create($data);
