@@ -353,10 +353,12 @@ export default {
         this.isModalOpen = true;
         document.addEventListener('mouseup', this.closeModalOnClickOutside);
     },
+
     closeModal() {
         this.isModalOpen = false;
         document.removeEventListener('mouseup', this.closeModalOnClickOutside);
     },
+
     closeModalOnClickOutside(event) {
         const modal = this.$refs.modalRef;
         if (!modal.contains(event.target)) {
@@ -548,6 +550,7 @@ export default {
     },
 
     // send message when button click (send) and button disabled till 2 seconds
+    
     sendMessage() {
 
         if(this.message.length !== 0) {
