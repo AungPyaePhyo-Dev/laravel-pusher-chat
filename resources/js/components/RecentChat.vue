@@ -74,14 +74,20 @@
                 }
             },
 
-        }
+            getLastMessage(recent_chat) {
+                if(recent_chat.last_message.message.length > 16) {
+                    return recent_chat.last_message.message.substring(0, 16) + '...';    
+                }
+                return recent_chat.last_message.message.substring(0, 17);
+            },
+        },
     }
 </script>
 
 <style>
     .active {
         background-color: #cdd5dd;
-        padding:0px 10px;
+        padding: 0px 10px;
         border-radius: 10px;
         transition: 0.5s;
     }

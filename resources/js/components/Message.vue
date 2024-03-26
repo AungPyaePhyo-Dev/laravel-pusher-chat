@@ -1,131 +1,105 @@
-
-
-<template>
-	<div class="chat">
-        {{ chats }}
-            <div class="card-body" ref="hasScrolledToBottom" v-if="chat != null">
-                <template v-for="chat in chats" :key="chat.id">
+<template>	
+    <div v-if="currentFilteredUser">
+        <div class="chat">
+            <div class="card-body" ref="hasScrolledToBottom" v-for="(chatGroup, date) in groupedChats" :key="date">
+                <div class="text-center">
+                    {{ getDay(date) }}
+                </div>
+                <div v-for="chat in chatGroup" :key="chat.id" >
                     <div class="message message-receive" v-if="chat.user.id != loggedInUser.id">
-                        <p>
-                            <strong class="primary-font">
-                               {{ chat.user.username }} :
-                            </strong>
-                            {{ chat.message }}
-                        </p>
+                        <div  v-if="chat.type == 1">
+                                <div class="d-flex align-items-center">
+                                    <img style="width:200px;" class="rounded my-2" :src="getChatImageUrl(chat.message)"  alt="">
+                                    <span class="mx-2">{{ getHourAndMinutes(chat.created_at) }}</span>
+                                </div>
+                        </div>
+                        <div v-else>
+                            <p>
+                                <strong class="primary-font">
+                                You ( {{ chat.user.username }} ):
+                                </strong>
+                                <span>
+                                    {{ chat.message }}
+                                </span>
+                                <br>
+                                <span>{{ getHourAndMinutes(chat.created_at) }}</span>
+                            </p> 
+                        </div>
                     </div>
-                    <div class="message message-send" v-else>
-                        <p>
-                            <strong class="primary-font">
-                               You ( {{ chat.user.username }} ):
-                            </strong>
-                            {{ chat.message }}
-                        </p>
+                    <div class="message message-send" v-if="chat.user.id == loggedInUser.id">
+                        <div  v-if="chat.type == 1">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <span class="mx-2">{{ getHourAndMinutes(chat.created_at) }}</span>
+                                    <img style="width:200px;" class="rounded my-2" :src="getChatImageUrl(chat.message)"  alt="">
+                                </div>
+                        </div>
+                        <div v-else>
+                            <p>
+                                <strong class="primary-font">
+                                You ( {{ chat.user.username }} ):
+                                </strong>
+                                <span>
+                                    {{ chat.message }}
+                                </span>
+                                <br>
+                                <span>{{ getHourAndMinutes(chat.created_at) }}</span>
+                            </p> 
+                        </div>
                     </div>
-                </template>
+                </div>
             </div>
-
-            <div>
-                <textarea 
-                    cols="25"
-                    rows="5"
-                    class="form-input" v-model="message">
-                </textarea>
-                <button class="button" @click="sendMessage">Send</button>
-            </div>
-	</div>
-
-    
+        </div>
+    </div>
+    <div v-else>
+        <div style="overflow:hidden; height: calc(100vh - 40vh);" class="align-items-center d-flex justify-content-center my-5">
+            <h5>Select a user to chat</h5>
+        </div>
+    </div>
 
 </template>
+
 <script>
+export default {
+    props: ['currentFilteredUser', 'groupedChats', 'loggedInUser'],
+    data() {
+    },
+    methods: {
+        getDay(time) {
+            const date = new Date(time);
+            const currentDate = new Date();
 
+            let yesterday = new Date(currentDate);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
+            const formattedDate = date.toISOString().slice(0, 10);
+            const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
+            const formattedYesterdayDate = yesterday.toISOString().slice(0, 10);  
 
-window.Pusher = Pusher;
-
-window.Echo = new Echo({
-                broadcaster: 'pusher',
-                key: import.meta.env.VITE_PUSHER_APP_KEY,
-                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                authEndpoint: 'http://127.0.0.1:8000/api/broadcasting/auth',
-                auth: {
-                    headers: {
-                        Authorization: 'Bearer 4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1'
-                    }
-                },
-                forceTLS: false,
-                encrypted: true,
-                disableStats: true,
-                enabledTransports: ['ws', 'wss'],
-                csrfToken: document.head.querySelector('meta[name="csrf-token"]').content
-            });
-
-                    
-
-    export default {
-         props: ['currentFilteredUser', 'chats'],
-        data() {
-            let chat_id = null;
-
-            if(this.chat) {
-                chat_id = this.chat.chat_id;
-            }
-
-            let loggedInUser = {
-                "id": 2,
-                "username": "user2",
-                "email": "user2@email.com",
-                "created_at": "2024-02-20T04:06:12.000000Z",
-                "updated_at": "2024-02-20T04:06:12.000000Z"
-            };
-
-            return {
-                chats : [],
-                loggedInUser,
+            if(formattedDate == formattedCurrentDate) {
+                return "Today";
+            }else if(formattedDate == formattedYesterdayDate) {
+                return "yesterday";
+            } else {
+                return time;
             }
         },
-        methods: {
-            sendMessage() {
-                let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
-                
 
-                axios.request({
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    method: "POST",
-                    url: `/api/chat-message`,
-                    data: {
-                        message: this.message,
-                        chat_id: 1
-                    },
-                    }).then(response => {
-                        this.chats.push(response.data.data);
-                        this.message = '';
-                });
-            }
+        getHourAndMinutes(dateString) {
+            const date = new Date(dateString);
+            const currentDate = new Date();
+            
+            const hour = date.getHours();
+            const minutes = date.getMinutes();
+            const amPM = hour >= 12 ? 'PM' : 'AM';
+            const formattedHour = hour % 12 || 12;
+            return `${formattedHour}:${minutes < 10 ? '0' : ''}${minutes} ${amPM}`; // Padding with zero if minutes < 10
         },
-        mounted() {
-            let token = '4|zeOdKyuUHc1cWeJ7RuoRMQNj5fSn1T2IwDIqezpO42cc47b1';
 
-            axios.request({
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                method: "GET",
-                url: `/api/chat-message?${this.chat.chat_id}=1&page=1`,
-                }).then(response => {
-                    this.chats = response.data.data;
-            });
-
-            window.Echo.private(`chat-${this.chat.chat_id}`).listen('NewMessageSent', (e) => {
-                this.chats.push(e.message);
-               });
+        getChatImageUrl(url) {
+            return "http://localhost:8000/storage/" + url;        
         }
     }
-
+}
 </script>
 
 
