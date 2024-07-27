@@ -201,11 +201,11 @@
                                             });
 
                                             if(this.clickCounts[id] < 2) {
-                                            window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
-                                                if(currentUser.id && e.chat_id == chat.id) {
-                                                        this.chats.push(e.message);
-                                                }
-                                            }); 
+                                                window.Echo.private(`chat-${chat.id}`).listen('NewMessageSent', (e) => {
+                                                    if(currentUser.id && e.chat_id == chat.id) {
+                                                            this.chats.push(e.message);
+                                                    }
+                                                }); 
 
                                             }      
                                     } else {
